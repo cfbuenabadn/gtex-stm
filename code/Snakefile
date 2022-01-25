@@ -1,0 +1,20 @@
+configfile: "config/config.yaml"
+include: "rules/common.py"
+
+include: "rules/DownloadBAM.smk"
+include: "rules/GetGeneAnnotation.smk"
+include: "rules/GetCountTables.smk"
+include: "rules/RunSTM.smk"
+
+
+localrules:
+    all,
+    DownloadFromGTEX,
+    DownloadHg38Ref,
+
+
+rule all:
+    input:
+        expand("Counts/{gene}.Counts.csv.gz", gene=genes),
+        expand("stm_models/{gene}.sgom_K5.rds", gene=genes)
+

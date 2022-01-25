@@ -1,0 +1,17 @@
+name: "gtex-stm"
+output_dir: ../docs
+navbar:
+  title: "gtex-stm"
+  left:
+  - text: Home
+    href: index.html
+  - text: About
+    href: about.html
+  - text: License
+    href: license.html
+output:
+  workflowr::wflow_html:
+    toc: yes
+    toc_float: no
+    theme: cosmo
+    highlight: textmate
