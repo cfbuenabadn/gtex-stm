@@ -19,7 +19,7 @@ if __name__ == '__main__':
     files = os.listdir(gene_dir)
     
 
-   owith gzip.open(output, 'wb') as fh_out:
+    with gzip.open(output, 'wb') as fh_out:
         
         processed_files = 0
         
