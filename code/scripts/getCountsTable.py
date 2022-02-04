@@ -16,7 +16,7 @@ if __name__ == '__main__':
     
     output = args.output
     gene_dir = args.gene_dir
-    files = os.listdir(gene_dir)
+    files = sorted(os.listdir(gene_dir))
     
 
     with gzip.open(output, 'wb') as fh_out:
@@ -39,6 +39,7 @@ if __name__ == '__main__':
                         chrom = row[0]
                     else:
                         chrom = 'chr' + row[0]
+                    
                     start = int(row[1]) + 1
                     
             if processed_files == 0:
