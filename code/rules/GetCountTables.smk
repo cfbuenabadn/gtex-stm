@@ -30,15 +30,27 @@ rule GetCoverageGene:
     output:
         "CoverageGene/{gene}/{IndID}.coverage.bed"
     log:
-        "logs/{gene}.{IndID}.coverage.bed"
+        "logs/{gene}.{IndID}.coverage.log"
     shell:
         """
         awk -F'\t' '$4=="{wildcards.gene}"' {input} > {output}
         """
         
+rule SortBedFiles:
+    input:
+        "CoverageGene/{gene}/{IndID}.coverage.bed"
+    output:
+        "CoverageGene/{gene}/{IndID}.coverage.sorted.bed"
+    log:
+        "logs/{gene}.{IndID}.coverage.sort.log"
+    shell:
+        """
+        sort -k 6 -n {input} > {output}
+        """
+        
 rule GetCountsGene:
     input:
-       lambda wildcards: expand("CoverageGene/{{gene}}/{IndID}.coverage.bed", IndID = gtex_samples)
+       lambda wildcards: expand("CoverageGene/{{gene}}/{IndID}.coverage.sorted.bed", IndID = gtex_samples)
     output:
         "Counts/{gene}.Counts.csv.gz"
     log:

@@ -16,7 +16,7 @@ if __name__ == '__main__':
     
     output = args.output
     gene_dir = args.gene_dir
-    files = sorted(os.listdir(gene_dir))
+    files = [x for x in sorted(os.listdir(gene_dir)) if 'sorted' in x]
     
 
     with gzip.open(output, 'wb') as fh_out:

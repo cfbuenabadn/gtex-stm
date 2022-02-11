@@ -10,7 +10,7 @@ rule MakeGenesBed:
     input:
         "Annotations/gencode.v34.primary_assembly.annotation.gtf",
     params:
-        extension = 1000
+        extension = 100
     output:
         "Annotations/genes.bed"
     log:
