@@ -47,7 +47,11 @@ if __name__ == '__main__':
                 
                 fh_out.write(('IndID,'+ ','.join([chrom + ':' + str(x) for x in positions]) +'\n').encode())
                 
-            fh_out.write((IndID + ',' + ','.join(coverage) + '\n').encode())
+            token = np.any([int(x) > 0 for x in coverage])
+                
+            if token:
+                fh_out.write((IndID + ',' + ','.join(coverage) + '\n').encode())
+            
             processed_files += 1
                 
                     

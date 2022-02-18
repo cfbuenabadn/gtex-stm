@@ -3,9 +3,11 @@ rule DownloadFromGTEX:
         "../data/file-manifest.json",
         "../data/gen3-client"
     output:
+        temp(
         expand(
         "/project2/yangili1/cfbuenabadn/gtex-stm/code/gtex-download/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam", 
         IndID = gtex_samples
+        )
         )
     shell:
         """
@@ -16,7 +18,7 @@ rule GetIndex:
     input:
         bam = "/project2/yangili1/cfbuenabadn/gtex-stm/code/gtex-download/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam"
     output:
-        bai = "/project2/yangili1/cfbuenabadn/gtex-stm/code/gtex-download/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.bai"
+        bai = temp("/project2/yangili1/cfbuenabadn/gtex-stm/code/gtex-download/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.bai")
     log:
         "logs/bam_idx.{IndID}.log"
     shell:
