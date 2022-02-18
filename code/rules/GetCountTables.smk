@@ -3,7 +3,7 @@ rule GetBamCoverage:
         bam = "/project2/yangili1/cfbuenabadn/gtex-stm/code/gtex-download/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
         bai = "/project2/yangili1/cfbuenabadn/gtex-stm/code/gtex-download/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.bai"
     output:
-        gCoverage = "BamCoverage/{IndID}.coverage.bed"
+        gCoverage = temp("BamCoverage/{IndID}.coverage.bed")
     log:
         "logs/coverage.{IndID}.log"
     shell:
@@ -28,7 +28,7 @@ rule GetCoverageGene:
     input:
         "BamTranscriptome/{IndID}.transcriptome.bed"
     output:
-        "CoverageGene/{gene}/{IndID}.coverage.bed"
+        temp("CoverageGene/{gene}/{IndID}.coverage.bed")
     log:
         "logs/{gene}.{IndID}.coverage.log"
     shell:

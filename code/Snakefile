@@ -18,6 +18,6 @@ rule all:
         expand("Counts/{gene}.Counts.csv.gz", gene=genes),
         expand("stm_models/{gene}.sgom_K{knum}.rds", 
                gene=genes, 
-               knum=[3, 5]
+               knum=[5]
         )
 
