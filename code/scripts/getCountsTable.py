@@ -5,30 +5,32 @@ import numpy as np
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--output', type=str, required=True)
-parser.add_argument('--gene_dir', type=str, required=True)
+#parser.add_argument('--gene_dir', type=str, required=True)
+parser.add_argument('FILES', type=str, nargs="+")
 
 if __name__ == '__main__':
     
-    if not os.path.isdir('Counts'):
-        os.mkdir('Counts')
+#     if not os.path.isdir('Counts'):
+#         os.mkdir('Counts')
 
     args = parser.parse_args()
     
     output = args.output
-    gene_dir = args.gene_dir
-    files = [x for x in sorted(os.listdir(gene_dir)) if 'sorted' in x]
+    #gene_dir = args.gene_dir
     
+    #files = [x for x in sorted(os.listdir(gene_dir)) if 'sorted' in x]
+    files = args.FILES
 
     with gzip.open(output, 'wb') as fh_out:
         
         processed_files = 0
         
         for bed in files:
-            IndID = bed.split('.')[0]
+            IndID = bed.split('/')[-1].split('.')[0]
             
             position = []
             coverage = []
-            with open(gene_dir + '/' + bed, 'r') as fh:
+            with gzip.open(bed, 'rt') as fh:
                 
                 for row in fh:
                     row = row.rstrip().split('\t')

@@ -1,18 +1,26 @@
 rule DownloadFromGTEX:
     input:
-        "../data/file-manifest.json",
-        "../data/gen3-client"
+        #manifest = "../data/file-manifest.json",
+        #manifest = "../data/file-manifest_20.json",
+        manifest = "../data/file-manifest_50.json",
+        #manifest = "../data/file-manifest_20-balanced.json",
+        #manifest = "../data/file-manifest_30-1.json",
+        client = "../data/gen3-client"
     output:
         temp(
         expand(
         "/project2/yangili1/cfbuenabadn/gtex-stm/code/gtex-download/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam", 
         IndID = gtex_samples
+        #IndID = gtex_samples_50
+        #IndID = gtex_samples_balanced
+        #IndID = gtex_samples_30_1
         )
         )
     shell:
         """
-        ../data/gen3-client download-multiple --profile=AnVIL --manifest=../data/file-manifest.json --download-path=/project2/yangili1/cfbuenabadn/gtex-stm/code/gtex-download/bams/ --protocol=s3
+        {input.client} download-multiple --profile=AnVIL --manifest={input.manifest} --download-path=/project2/yangili1/cfbuenabadn/gtex-stm/code/gtex-download/bams/ --protocol=s3
         """
+
 
 rule GetIndex:
     input:
