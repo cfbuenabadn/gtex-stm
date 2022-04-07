@@ -4,6 +4,7 @@ library(NNLM)
 args = commandArgs(trailingOnly=TRUE)
 geneCountsFile = args[1]
 K = as.integer(args[2])
+output = args[3]
 
 if (!dir.exists('stm_models')){
 dir.create('stm_models')
@@ -20,5 +21,5 @@ saveRDS(list(gene=geneName,
              assays = c('RNASeq'),
              fit_sgom = fit_sgom
             ),
-        file=paste('stm_models/', geneName, '.sgom_K', as.character(K), '.rds',sep='')
+        file=paste(output,sep='')
        )

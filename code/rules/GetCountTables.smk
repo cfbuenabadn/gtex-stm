@@ -14,53 +14,74 @@ rule GetBamCoverage:
 rule IntersectCoverageWithGene:
     input:
         gCoverage = "BamCoverage/{IndID}.coverage.bed",
-        gene = "Annotations/genes.bed"
+        genes = "Annotations/genes.bed"
     output:
-        "BamTranscriptome/{IndID}.transcriptome.bed"
+        "BamTranscriptome/{IndID}.transcriptome.bed.gz"
     log:
         "logs/{IndID}.transcriptome.log"
+    resources:
+        mem_mb = 58000
     shell:
         """
-        bedtools intersect -wao -a {input.gene} -b {input.gCoverage} > {output}
+        bedtools intersect -wao -a {input.genes} -b {input.gCoverage} > BamTranscriptome/{wildcards.IndID}.transcriptome.bed;
+        gzip BamTranscriptome/{wildcards.IndID}.transcriptome.bed
         """
         
 rule GetCoverageGene:
     input:
-        "BamTranscriptome/{IndID}.transcriptome.bed"
+        lambda wildcards: expand("BamTranscriptome/{IndID}.transcriptome.bed.gz", IndID = gtex_samples)
     output:
-        temp("CoverageGene/{gene}/{IndID}.coverage.bed")
+        ["CoverageGene/{gene}/" + IndID + ".coverage.sorted.bed.gz" for IndID in gtex_samples]
+        #f"CoverageGene/{{gene}}/{gtex_samples}.coverage.sorted.bed.gz"
+        #"CoverageGene/{gene}/token.txt"
+        #lambda wildcards: expand("CoverageGene/{{gene}}/{IndID}.coverage.sorted.bed.gz", IndID = gtex_samples)
     log:
-        "logs/{gene}.{IndID}.coverage.log"
+        "logs/{gene}.coverage.log"
+    resources:
+        mem_mb = 58000
     shell:
         """
-        awk -F'\t' '$4=="{wildcards.gene}"' {input} > {output}
+        for IndID in $(ls BamTranscriptome/ | awk -F'.' '{{print $1}}')
+        do
+          zcat BamTranscriptome/${{IndID}}.transcriptome.bed.gz | awk -F'\\t' '$4=="{wildcards.gene}"' - > CoverageGene/{wildcards.gene}/${{IndID}}.coverage.bed
+          sort -k 6 -n CoverageGene/{wildcards.gene}/${{IndID}}.coverage.bed > CoverageGene/{wildcards.gene}/${{IndID}}.coverage.sorted.bed
+          gzip CoverageGene/{wildcards.gene}/${{IndID}}.coverage.sorted.bed
+          rm CoverageGene/{wildcards.gene}/${{IndID}}.coverage.bed
+        done
         """
         
-rule SortBedFiles:
-    input:
-        "CoverageGene/{gene}/{IndID}.coverage.bed"
-    output:
-        "CoverageGene/{gene}/{IndID}.coverage.sorted.bed"
-    log:
-        "logs/{gene}.{IndID}.coverage.sort.log"
-    shell:
-        """
-        sort -k 6 -n {input} > {output}
-        """
+#rule SortBedFiles:
+#    input:
+#        "CoverageGene/{gene}/{IndID}.coverage.bed"
+#    output:
+#        "CoverageGene/{gene}/{IndID}.coverage.sorted.bed.gz"
+#    log:
+#        "logs/{gene}.{IndID}.coverage.sort.log"
+#    shell:
+#        """
+#        sort -k 6 -n {input} > CoverageGene/{wildcards.gene}/{wildcards.IndID}.coverage.sorted.bed;
+#        gzip CoverageGene/{wildcards.gene}/{wildcards.IndID}.coverage.sorted.bed
+#        """
         
 rule GetCountsGene:
     input:
-       lambda wildcards: expand("CoverageGene/{{gene}}/{IndID}.coverage.sorted.bed", IndID = gtex_samples)
+        lambda wildcards: expand("CoverageGene/{{gene}}/{IndID}.coverage.sorted.bed.gz", IndID = gtex_samples)
     output:
         "Counts/{gene}.Counts.csv.gz"
     log:
         "logs/{gene}.Counts.log"
     shell:
         """
-        python scripts/getCountsTable.py --output {output} --gene_dir CoverageGene/{wildcards.gene}/ &> {log}
+        python scripts/getCountsTable.py --output {output} {input} &> {log}
         """
+
         
-        
-            
+use rule GetCountsGene as GetCountsGene_30_1 with:
+    input:
+        lambda wildcards: expand("CoverageGene/{{gene}}/{IndID}.coverage.sorted.bed.gz", IndID = gtex_samples_30_1)
+    output:
+        "Counts_30_1/{gene}.Counts.csv.gz"
+    log:
+        "logs/{gene}.Counts_30_1.log"
             
             

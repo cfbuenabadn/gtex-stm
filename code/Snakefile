@@ -5,6 +5,7 @@ include: "rules/DownloadBAM.smk"
 include: "rules/GetGeneAnnotation.smk"
 include: "rules/GetCountTables.smk"
 include: "rules/RunSTM.smk"
+#include: "rules/ExpressionAnalysis.smk"
 
 
 localrules:
@@ -15,9 +16,34 @@ localrules:
 
 rule all:
     input:
-        expand("Counts/{gene}.Counts.csv.gz", gene=genes),
         expand("stm_models/{gene}.sgom_K{knum}.rds", 
-               gene=genes, 
-               knum=[5]
-        )
+               gene=genes,
+               knum=[3, 5, 10]
+        ),
+        #expand("stm_models_30_1/{gene}.sgom_K{knum}.rds", 
+        #       gene=['TPM1', 'TPM2', 'TPM3', 'SRSF3'], 
+        #       knum=[3, 5, 10]
+        #),
+        #expand("BamTranscriptome/{IndID}.transcriptome.bed.gz",
+        #        IndID = gtex_samples_all)
+        #expand("Counts/{gene}.Counts.csv.gz", gene=genes),
+        #expand("stm_models/{gene}.sgom_K{knum}.rds", 
+        #       gene=genes, 
+        #       knum=[3, 5, 10]
+        #),
+        #expand("stm_models_50/{gene}.sgom_K{knum}.rds", 
+        #       gene=genes_50, 
+        #       knum=[3, 5, 10]
+        #)
 
+
+rule STM_30_1:
+    input:
+        #expand("stm_models/{gene}.sgom_K{knum}.rds", 
+        #       gene=genes,#['TPM3', 'SRSF3'], 
+        #       knum=[3, 5, 10]
+        #),
+        expand("stm_models_30_1/{gene}.sgom_K{knum}.rds", 
+               gene=['TPM1', 'TPM2', 'TPM3', 'SRSF3'], 
+               knum=[3, 5, 10]
+        ),
