@@ -7,4 +7,4 @@ editor_options:
   chunk_output_type: console
 ---
 
-Describe your project.
+Smoothed topic Poisson model applied to GTEx RNA-seq data.
