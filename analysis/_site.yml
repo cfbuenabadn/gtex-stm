@@ -1,7 +1,7 @@
-name: "gtex-stm"
+name: gtex-stm
 output_dir: ../docs
 navbar:
-  title: "gtex-stm"
+  title: gtex-stm
   left:
   - text: Home
     href: index.html
@@ -9,6 +9,10 @@ navbar:
     href: about.html
   - text: License
     href: license.html
+  right:
+  - icon: fa-github
+    text: Source code
+    href: https://github.com/cfbuenabadn/gtex-stm
 output:
   workflowr::wflow_html:
     toc: yes
