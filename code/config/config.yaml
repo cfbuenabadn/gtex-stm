@@ -3,3 +3,5 @@
 # one row per sample. It can be parsed easily via pandas.
 
 samples: config/samples.tsv
+
+rMATS: "/home/cnajar/rmats-turbo/rmats.py"

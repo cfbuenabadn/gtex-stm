@@ -2,9 +2,11 @@ rule RunSGOM:
     input:
        "Counts/{gene}.Counts.csv.gz"
     output:
-        "stm_models/{gene}.sgom_K{knum}.rds"
+        "stm_models/{gene}/{gene}.sgom_K{knum}.rds"
     log:
         "logs/{gene}.K{knum}.sgom.log"
+    wildcard_constraints:
+        gene = '|'.join(genes)
     resources:
         mem_mb = 58000
     shell:
@@ -12,28 +14,55 @@ rule RunSGOM:
         (Rscript scripts/run_sgom.R {input} {wildcards.knum} {output} || true) &> {log}
         """
         
-use rule RunSGOM as RunSGOM_50 with:
-    input:
-        "Counts_50/{gene}.Counts.csv.gz"
-    output:
-        "stm_models_50/{gene}.sgom_K{knum}.rds"
-    log:
-        "logs/{gene}.50_samples.K{knum}.sgom.log"
         
         
-use rule RunSGOM as RunSGOM_balanced with:
-    input:
-        "Counts_balanced/{gene}.Counts.csv.gz"
-    output:
-        "stm_models_balanced/{gene}.sgom_K{knum}.rds"
-    log:
-        "logs/{gene}.balanced_samples.K{knum}.sgom.log"
         
-
-use rule RunSGOM as RunSGOM_30_1 with:
+########################## Older, unused ##############################
+        
+rule RunSGOM_NoTissue:
     input:
-        "Counts_30_1/{gene}.Counts.csv.gz"
+       "Counts/{gene}.Counts.no_{tissue}.csv.gz"
     output:
-        "stm_models_30_1/{gene}.sgom_K{knum}.rds"
+        "stm_models/{gene}/{gene}.no_{tissue}.sgom_K{knum}.rds"
+    wildcard_constraints:
+        gene = '|'.join(genes)
     log:
-        "logs/{gene}.30_1_samples.K{knum}.sgom.log"
+        "logs/{gene}.no_{tissue}.K{knum}.sgom.log"
+    resources:
+        mem_mb = 58000
+    shell:
+        """
+        (Rscript scripts/run_sgom.R {input} {wildcards.knum} {output} || true) &> {log}
+        """
+        
+rule RunSGOM_OneOfTissue:
+    input:
+       "Counts/{gene}.Counts.one_of_{tissue}.csv.gz"
+    output:
+        "stm_models/{gene}/{gene}.one_of_{tissue}.sgom_K{knum}.rds"
+    wildcard_constraints:
+        gene = '|'.join(genes)
+    log:
+        "logs/{gene}.one_of_{tissue}.K{knum}.sgom.log"
+    resources:
+        mem_mb = 58000
+    shell:
+        """
+        (Rscript scripts/run_sgom.R {input} {wildcards.knum} {output} || true) &> {log}
+        """
+        
+rule RunSGOM_MinusOneOfTissue:
+    input:
+       "Counts/{gene}.Counts.minus_one_of_{tissue}.csv.gz"
+    output:
+        "stm_models/{gene}/{gene}.minus_one_of_{tissue}.sgom_K{knum}.rds"
+    wildcard_constraints:
+        gene = '|'.join(genes)
+    log:
+        "logs/{gene}.one_of_{tissue}.K{knum}.sgom.log"
+    resources:
+        mem_mb = 58000
+    shell:
+        """
+        (Rscript scripts/run_sgom.R {input} {wildcards.knum} {output} || true) &> {log}
+        """

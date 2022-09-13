@@ -49,20 +49,8 @@ rule GetCoverageGene:
           rm CoverageGene/{wildcards.gene}/${{IndID}}.coverage.bed
         done
         """
-        
-#rule SortBedFiles:
-#    input:
-#        "CoverageGene/{gene}/{IndID}.coverage.bed"
-#    output:
-#        "CoverageGene/{gene}/{IndID}.coverage.sorted.bed.gz"
-#    log:
-#        "logs/{gene}.{IndID}.coverage.sort.log"
-#    shell:
-#        """
-#        sort -k 6 -n {input} > CoverageGene/{wildcards.gene}/{wildcards.IndID}.coverage.sorted.bed;
-#        gzip CoverageGene/{wildcards.gene}/{wildcards.IndID}.coverage.sorted.bed
-#        """
-        
+
+
 rule GetCountsGene:
     input:
         lambda wildcards: expand("CoverageGene/{{gene}}/{IndID}.coverage.sorted.bed.gz", IndID = gtex_samples)
@@ -70,18 +58,31 @@ rule GetCountsGene:
         "Counts/{gene}.Counts.csv.gz"
     log:
         "logs/{gene}.Counts.log"
+    wildcard_constraints:
+        gene = '|'.join(genes)
     shell:
         """
         python scripts/getCountsTable.py --output {output} {input} &> {log}
         """
-
-        
-use rule GetCountsGene as GetCountsGene_30_1 with:
+            
+            
+rule GetCountsGene_NoTissue:
     input:
-        lambda wildcards: expand("CoverageGene/{{gene}}/{IndID}.coverage.sorted.bed.gz", IndID = gtex_samples_30_1)
+        "Counts/{gene}.Counts.csv.gz",
+        "../data/sample.tsv",
+        "../data/participant.tsv"
     output:
-        "Counts_30_1/{gene}.Counts.csv.gz"
+        "Counts/{gene}.Counts.no_{tissue}.csv.gz",
+        "Counts/{gene}.Counts.one_of_{tissue}.csv.gz",
+        "Counts/{gene}.Counts.minus_one_of_{tissue}.csv.gz"
+    wildcard_constraints:
+        gene = '|'.join(genes)
     log:
-        "logs/{gene}.Counts_30_1.log"
-            
-            
+        "logs/{gene}.Counts_remove_{tissue}.log"
+    shell:
+        """
+        python scripts/getCountsTableNoTissue.py --gene {wildcards.gene} --tissue {wildcards.tissue} &> {log}
+        """
+      
+      
+       

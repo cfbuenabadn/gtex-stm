@@ -1,34 +1,78 @@
-rule DownloadFromGTEX:
+#rule DownloadFromGTEX:
+#    input:
+#        manifest = "../data/file-manifest_50.json",
+#        client = "../data/gen3-client"
+#    output:
+#        temp(
+#        expand(
+#        "/project2/yangili1/cfbuenabadn/gtex-stm/code/gtex-download/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam", 
+#        IndID = gtex_samples
+#        )
+#        )
+#    shell:
+#        """
+#        {input.client} download-multiple --profile=AnVIL --manifest={input.manifest} --download-path=/project2/yangili1/cfbuenabadn/gtex-stm/code/gtex-download/bams/ --protocol=s3
+#        """
+
+rule MakeFileManifestJson:
     input:
-        #manifest = "../data/file-manifest.json",
-        #manifest = "../data/file-manifest_20.json",
-        manifest = "../data/file-manifest_50.json",
-        #manifest = "../data/file-manifest_20-balanced.json",
-        #manifest = "../data/file-manifest_30-1.json",
-        client = "../data/gen3-client"
+        "../data/file-manifest.json",
+        '../data/sample.tsv',
+        '../data/participant.tsv'
     output:
-        temp(
-        expand(
-        "/project2/yangili1/cfbuenabadn/gtex-stm/code/gtex-download/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam", 
-        IndID = gtex_samples
-        #IndID = gtex_samples_50
-        #IndID = gtex_samples_balanced
-        #IndID = gtex_samples_30_1
-        )
-        )
+        "gtex-download/file_manifest/TrainTest_2tissues.json",
+        "gtex-download/file_manifest/ThreeSamplesFemale.json",
+        "gtex-download/file_manifest/ThreeSamplesMale.json",
+    log:
+        'logs/makefilemanifest.json'
     shell:
         """
-        {input.client} download-multiple --profile=AnVIL --manifest={input.manifest} --download-path=/project2/yangili1/cfbuenabadn/gtex-stm/code/gtex-download/bams/ --protocol=s3
+        python scripts/get_file_manifest.py &> {log}
         """
 
+def GetFileManifest(wildcards):
+    manifest = "gtex_download/file_manifest/{SampleSet}.json".format(SampleSet = wildcards.SampleSet)
+    return manifest
+
+rule DownloadFromGTEX_ThreeSamplesFemale:
+    input:
+        manifest = "gtex-download/file_manifest/ThreeSamplesFemale.json",
+        client = "../data/gen3-client"
+    output:
+        expand(
+        "/project2/yangili1/cfbuenabadn/gtex-stm/code/gtex-download/bams/ThreeSamplesFemale/{IndID}.Aligned.sortedByCoord.out.patched.md.bam", 
+        IndID = female_samples
+        )
+    log:
+        'logs/download_SmallTest.log' 
+    shell:
+        """
+        {input.client} download-multiple --profile=AnVIL --manifest={input.manifest} --download-path=/project2/yangili1/cfbuenabadn/gtex-stm/code/gtex-download/bams/ThreeSamplesFemale/ --protocol=s3
+        """
+        
+rule DownloadFromGTEX:
+    input:
+        manifest = "gtex-download/file_manifest/TrainTest_2tissues.json",
+        client = "../data/gen3-client"
+    output:
+        expand(
+        "/project2/yangili1/cfbuenabadn/gtex-stm/code/gtex-download/bams/TrainTest_2tissues/{IndID}.Aligned.sortedByCoord.out.patched.md.bam", 
+        IndID = gtex_samples
+        )
+    log:
+        'logs/download_TrainTest_2tissues.log' 
+    shell:
+        """
+        {input.client} download-multiple --profile=AnVIL --manifest={input.manifest} --download-path=/project2/yangili1/cfbuenabadn/gtex-stm/code/gtex-download/bams/TrainTest_2tissues/ --protocol=s3
+        """
 
 rule GetIndex:
     input:
-        bam = "/project2/yangili1/cfbuenabadn/gtex-stm/code/gtex-download/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam"
+        bam = "/project2/yangili1/cfbuenabadn/gtex-stm/code/gtex-download/bams/{SampleSet}/{IndID}.Aligned.sortedByCoord.out.patched.md.bam"
     output:
-        bai = temp("/project2/yangili1/cfbuenabadn/gtex-stm/code/gtex-download/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.bai")
+        bai = "/project2/yangili1/cfbuenabadn/gtex-stm/code/gtex-download/bams/{SampleSet}/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.bai"
     log:
-        "logs/bam_idx.{IndID}.log"
+        "logs/bam_idx.{SampleSet}.{IndID}.log"
     shell:
         """
         samtools index {input.bam} {output.bai} &> {log}

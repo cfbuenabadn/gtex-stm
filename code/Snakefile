@@ -6,44 +6,48 @@ include: "rules/GetGeneAnnotation.smk"
 include: "rules/GetCountTables.smk"
 include: "rules/RunSTM.smk"
 #include: "rules/ExpressionAnalysis.smk"
+include: "rules/RunTests.smk"
+include: "rules/DifferentialSplicing.smk"
 
 
 localrules:
     all,
     DownloadFromGTEX,
+    DownloadFromGTEX_ThreeSamplesFemale,
     DownloadHg38Ref,
 
 
 rule all:
     input:
-        expand("stm_models/{gene}.sgom_K{knum}.rds", 
-               gene=genes,
-               knum=[3, 5, 10]
-        ),
-        #expand("stm_models_30_1/{gene}.sgom_K{knum}.rds", 
-        #       gene=['TPM1', 'TPM2', 'TPM3', 'SRSF3'], 
+        #expand("stm_models/{gene}/{gene}.sgom_K{knum}.rds", 
+        #       gene=genes,
         #       knum=[3, 5, 10]
         #),
-        #expand("BamTranscriptome/{IndID}.transcriptome.bed.gz",
-        #        IndID = gtex_samples_all)
-        #expand("Counts/{gene}.Counts.csv.gz", gene=genes),
-        #expand("stm_models/{gene}.sgom_K{knum}.rds", 
-        #       gene=genes, 
-        #       knum=[3, 5, 10]
-        #),
-        #expand("stm_models_50/{gene}.sgom_K{knum}.rds", 
-        #       gene=genes_50, 
-        #       knum=[3, 5, 10]
-        #)
-
-
-rule STM_30_1:
+        expand("stm_models/{gene}/{gene}.sgom_K{knum}.rds", 
+          gene=["CERCAM", "IDH3B", "GRHPR", "SNAP25", "FLNA", "RPN2", "NDRG4", "MORF4L2", "CMC1",
+                "PKM", "NPM3", "FGF8", "CMC2", "APOE", "CKS2"], 
+          knum=[3, 5, 10, 2]
+        ),        
+        #expand("stm_models/{gene}/{gene}.{mode}_{tissue}.sgom_K{knum}.rds",
+        #        mode = ["no", "one_of", "minus_one_of"],
+        #        gene = ["TPM3", "SRSF3"], 
+        #        tissue = ["Muscle_Skeletal", "Whole_Blood", "Brain_Cortex"],
+        #        knum=[3, 5, 10]
+        #        )
+        
+rule DifferentialSplicing:
     input:
-        #expand("stm_models/{gene}.sgom_K{knum}.rds", 
-        #       gene=genes,#['TPM3', 'SRSF3'], 
-        #       knum=[3, 5, 10]
-        #),
-        expand("stm_models_30_1/{gene}.sgom_K{knum}.rds", 
-               gene=['TPM1', 'TPM2', 'TPM3', 'SRSF3'], 
-               knum=[3, 5, 10]
-        ),
+        #"DifferentialSplicing/rMATS/TrainTest_2tissues/output/summary.txt",
+        #"DifferentialSplicing/rMATS/ThreeSamplesFemale/output/summary.txt",
+        #"DifferentialSplicing/leafcutter/TrainTest_2tissues/output/leafcutter_cluster_significance.txt",
+        "DifferentialSplicing/leafcutter/ThreeSamplesFemale/output/leafcutter_cluster_significance.txt"
+        
+rule tests:
+    input:
+        expand("Tests/PKM/stm_models/SubsetRegion.sgom_K{knum}.rds", knum=[2, 3, 5, 10]),
+        expand("Tests/PKM/stm_models/SubsetRegion_train.sgom_K{knum}.rds", knum=[2, 3, 5, 10]),
+        expand("Tests/PKM/stm_models/SubsetTissues.sgom_K{knum}.rds", knum=[2, 3, 5, 10]),
+        expand("Tests/PKM/stm_models/SubsetTissues_train.sgom_K{knum}.rds", knum=[2, 3, 5, 10]),
+        expand("Tests/PKM/stm_models/SubsetTissues_plus_one.sgom_K{knum}.rds", knum=[2, 3, 5, 10]),
+        expand("Tests/PKM/stm_models/SubsetTissues_train_plus_one.sgom_K{knum}.rds", knum=[2, 3, 5, 10]),
+        expand("Tests/{gene}/stm_models/Training.sgom_K{knum}.rds", gene = ["PKM", "TPM3", "SRSF3"], knum=[2, 3, 5, 10])
