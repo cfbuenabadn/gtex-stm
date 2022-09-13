@@ -27,7 +27,7 @@ rule MakeFileManifestJson:
         'logs/makefilemanifest.json'
     shell:
         """
-        python scripts/get_file_manifest.py &> {log}
+        python scripts/get_file_manifest_brain_muscle.py &> {log}
         """
 
 def GetFileManifest(wildcards):

@@ -37,9 +37,9 @@ rule all:
         
 rule DifferentialSplicing:
     input:
-        #"DifferentialSplicing/rMATS/TrainTest_2tissues/output/summary.txt",
-        #"DifferentialSplicing/rMATS/ThreeSamplesFemale/output/summary.txt",
-        #"DifferentialSplicing/leafcutter/TrainTest_2tissues/output/leafcutter_cluster_significance.txt",
+        "DifferentialSplicing/rMATS/TrainTest_2tissues/output/summary.txt",
+        "DifferentialSplicing/rMATS/ThreeSamplesFemale/output/summary.txt",
+        "DifferentialSplicing/leafcutter/TrainTest_2tissues/output/leafcutter_cluster_significance.txt",
         "DifferentialSplicing/leafcutter/ThreeSamplesFemale/output/leafcutter_cluster_significance.txt"
         
 rule tests:
