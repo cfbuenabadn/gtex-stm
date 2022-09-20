@@ -12,8 +12,10 @@ include: "rules/DifferentialSplicing.smk"
 
 localrules:
     all,
-    DownloadFromGTEX,
-    DownloadFromGTEX_ThreeSamplesFemale,
+    DownloadFromGTEx_Brain_Cortex,
+    DownloadFromGTEx_Muscle_Skeletal,
+    DownloadFromGTEx_Whole_Blood,
+    DownloadFromGTEx_Liver,
     DownloadHg38Ref,
 
 
@@ -37,10 +39,15 @@ rule all:
         
 rule DifferentialSplicing:
     input:
-        "DifferentialSplicing/rMATS/TrainTest_2tissues/output/summary.txt",
-        "DifferentialSplicing/rMATS/ThreeSamplesFemale/output/summary.txt",
-        "DifferentialSplicing/leafcutter/TrainTest_2tissues/output/leafcutter_cluster_significance.txt",
-        "DifferentialSplicing/leafcutter/ThreeSamplesFemale/output/leafcutter_cluster_significance.txt"
+        "DifferentialSplicing/rMATS/Brain_Cortex_v_Muscle_Skeletal_female_test/output/summary.txt",
+        "DifferentialSplicing/rMATS/Brain_Cortex_v_Muscle_Skeletal_train/output/summary.txt",
+        "DifferentialSplicing/leafcutter/Brain_Cortex_v_Muscle_Skeletal_female_test/output/leafcutter_cluster_significance.txt",
+        "DifferentialSplicing/leafcutter/Brain_Cortex_v_Muscle_Skeletal_train/output/leafcutter_cluster_significance.txt",
+        #"DifferentialSplicing/rMATS/Whole_Blood_v_Liver_female_test/output/summary.txt",
+        #"DifferentialSplicing/rMATS/Whole_Blood_v_Liver_train/output/summary.txt",
+        #"DifferentialSplicing/leafcutter/Whole_Blood_v_Liver_female_test/output/leafcutter_cluster_significance.txt",
+        #"DifferentialSplicing/leafcutter/Whole_Blood_v_Liver_train/output/leafcutter_cluster_significance.txt"
+        
         
 rule tests:
     input:
