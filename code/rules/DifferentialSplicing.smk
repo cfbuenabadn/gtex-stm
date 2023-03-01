@@ -161,14 +161,15 @@ use rule MakeJuncFiles_Brain_Cortex as MakeJuncFiles_Liver with:
         
 rule MakeLeafcutterInputJuncFiles:
     input:
-        Tissue_1_Junc = GetTissueGroupJunc,
-        Tissue_2_Junc =GetTissueGroupJunc2
+        Tissue_1_Junc = GetTissueJunc,
+        Tissue_2_Junc =GetTissueJunc2
+        #Tissue_1_Junc = GetTissueGroupJunc,
+        #Tissue_2_Junc =GetTissueGroupJunc2
     output:
-        'DifferentialSplicing/leafcutter/{Tissue}_v_{Tissue_2}_{Group}/input/test_juncfiles.txt',
+        'DifferentialSplicing/leafcutter/juncfiles/{Tissue}_v_{Tissue_2}/test_juncfiles.txt',
     log:
-        "logs/leafcutter/input/{Tissue}_v_{Tissue_2}_{Group}.test_juncfiles.log"
+        "logs/leafcutter/input/{Tissue}_v_{Tissue_2}.test_juncfiles.log"
     wildcard_constraints:
-        Group = 'female_test|test|train',
         Tissue = '|'.join(tissue_list),
         Tissue_2 = '|'.join(tissue_list)
     shell:
@@ -184,7 +185,7 @@ rule MakeLeafcutterInputJuncFiles:
 
 rule MakeLeafcutterInputGroupsFile:
     input:
-        'DifferentialSplicing/leafcutter/{Tissue}_v_{Tissue_2}_{Group}/input/test_juncfiles.txt'
+        'DifferentialSplicing/leafcutter/juncfiles/{Tissue}_v_{Tissue_2}/test_juncfiles.txt'
     output:
         groups_file = 'DifferentialSplicing/leafcutter/{Tissue}_v_{Tissue_2}_{Group}/input/groups_file.txt'
     log:
@@ -203,25 +204,38 @@ rule MakeLeafcutterInputGroupsFile:
 
 rule LeafcutterCluster:
     input:
-        'DifferentialSplicing/leafcutter/{Tissue}_v_{Tissue_2}_{Group}/input/test_juncfiles.txt'
+        'DifferentialSplicing/leafcutter/juncfiles/{Tissue}_v_{Tissue_2}/test_juncfiles.txt'
     output:
-        'DifferentialSplicing/leafcutter/{Tissue}_v_{Tissue_2}_{Group}/output/leafcutter_perind_numers.counts.gz'
+        'DifferentialSplicing/leafcutter/juncfiles/{Tissue}_v_{Tissue_2}/leafcutter_perind_numers.counts.gz'
     log:
-        "logs/leafcutter/run/{Tissue}_v_{Tissue_2}_{Group}.cluster.log"
+        "logs/leafcutter/run/{Tissue}_v_{Tissue_2}.cluster.log"
     wildcard_constraints:
-        Group = 'female_test|test|train',
         Tissue = '|'.join(tissue_list),
         Tissue_2 = '|'.join(tissue_list)
     resources:
         mem_mb = 24000
     shell:
         """
-        python scripts/davidaknowles_leafcutter/scripts/leafcutter_cluster_regtools_py3.py -j {input} -m 50 -o DifferentialSplicing/leafcutter/{wildcards.Tissue}_v_{wildcards.Tissue_2}_{wildcards.Group}/output/leafcutter -l 500000 &> {log}
+        python scripts/davidaknowles_leafcutter/scripts/leafcutter_cluster_regtools_py3.py -j {input} -m 50 -o DifferentialSplicing/leafcutter/juncfiles/{wildcards.Tissue}_v_{wildcards.Tissue_2}/leafcutter -l 500000 &> {log}
         """
+        
+rule AnnotateClusters:
+    input:
+        gtf = 'scripts/davidaknowles_leafcutter/leafcutter/data/gencode.v31.exons.txt.gz',
+        clusters = 'DifferentialSplicing/leafcutter/juncfiles/{Tissue}_v_{Tissue_2}/leafcutter_perind_numers.counts.gz',
+    output:
+        'DifferentialSplicing/leafcutter/juncfiles/{Tissue}_v_{Tissue_2}/cluster_annotation.tab.gz'
+    log:
+        'logs/leafcutter/annotate_clusters_{Tissue}_v_{Tissue_2}.log'
+    shell:
+        """
+        python scripts/annotate_clusters.py --gtf {input.gtf} --clusters {input.clusters} --output {output} &> {log}
+        """
+        
         
 rule LeafcutterDS:
     input:
-        perind_counts = 'DifferentialSplicing/leafcutter/{Tissue}_v_{Tissue_2}_{Group}/output/leafcutter_perind_numers.counts.gz',
+        perind_counts = 'DifferentialSplicing/leafcutter/juncfiles/{Tissue}_v_{Tissue_2}/leafcutter_perind_numers.counts.gz',
         groups_file = 'DifferentialSplicing/leafcutter/{Tissue}_v_{Tissue_2}_{Group}/input/groups_file.txt',
         exons_file = 'scripts/davidaknowles_leafcutter/leafcutter/data/gencode31_exons.txt.gz'
     output:

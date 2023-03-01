@@ -12,10 +12,11 @@ rule MakeGenesBed:
     params:
         extension = 100
     output:
-        "Annotations/genes.bed"
+        "Annotations/genes.tab.gz"
     log:
-        "logs/gene_annotation.bed"
+        "logs/gene_annotation.tab.log"
     shell:
         """
-        python scripts/gtf2bed.py --gtf {input} --extension {params.extension} --output {output} &> {log}
+        awk '$3=="gene"' {input} | grep protein_coding - | awk -F'[\\t"]' '{{print $14, $10, $1":"$4-50"-"$5+50}}' OFS='\\t' | gzip - > {output}
+        #python scripts/gtf2bed.py --gtf {input} --extension {params.extension} --output {output} &> {log}
         """

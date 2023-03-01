@@ -96,6 +96,19 @@ use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Liver with:
 #        {input.client} download-multiple --profile=AnVIL --manifest={input.manifest} --download-path=/project2/mstephens/cfbuenabadn/gtex-#stm/code/gtex-download/bams/TrainTest_2tissues/ --protocol=s3
 #        """
 
+
+rule BamIndex:
+    input:
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{Tissue}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam"
+    output:
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{Tissue}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.bai"
+    log:
+        "logs/indexbam/{Tissue}.{IndID}.log"
+    shell:
+        """
+        samtools index {input} -o {output} > {log}
+        """
+
 rule GetIndex:
     input:
         bam = "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/bams/{SampleSet}/{IndID}.Aligned.sortedByCoord.out.patched.md.bam"

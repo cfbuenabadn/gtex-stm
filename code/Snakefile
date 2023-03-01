@@ -8,7 +8,7 @@ include: "rules/RunSTM.smk"
 #include: "rules/ExpressionAnalysis.smk"
 include: "rules/RunTests.smk"
 include: "rules/DifferentialSplicing.smk"
-
+include: "rules/Develop.smk"
 
 localrules:
     all,
@@ -43,6 +43,7 @@ rule DifferentialSplicing:
         "DifferentialSplicing/rMATS/Brain_Cortex_v_Muscle_Skeletal_train/output/summary.txt",
         "DifferentialSplicing/leafcutter/Brain_Cortex_v_Muscle_Skeletal_female_test/output/leafcutter_cluster_significance.txt",
         "DifferentialSplicing/leafcutter/Brain_Cortex_v_Muscle_Skeletal_train/output/leafcutter_cluster_significance.txt",
+        "DifferentialSplicing/leafcutter/juncfiles/Brain_Cortex_v_Muscle_Skeletal/cluster_annotation.tab.gz"
         #"DifferentialSplicing/rMATS/Whole_Blood_v_Liver_female_test/output/summary.txt",
         #"DifferentialSplicing/rMATS/Whole_Blood_v_Liver_train/output/summary.txt",
         #"DifferentialSplicing/leafcutter/Whole_Blood_v_Liver_female_test/output/leafcutter_cluster_significance.txt",
