@@ -106,7 +106,7 @@ rule BamIndex:
         "logs/indexbam/{Tissue}.{IndID}.log"
     shell:
         """
-        samtools index {input} -o {output} > {log}
+        samtools index {input} > {log}
         """
 
 rule GetIndex:
