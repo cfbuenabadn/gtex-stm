@@ -1,67 +1,67 @@
 #### Note: run these after loading Midway's R4.1.0 by running module load R/4.1.0
 
-def GetSetBAM(wildcards):
-    if wildcards.Test == 'female_test':
-        IndID_list = get_all_samples(wildcards.Tissue, True)[0]
-    elif wildcards.Test == 'train':
-        IndID_list = get_all_samples(wildcards.Tissue, True)[1]
-    elif wildcards.Test == 'test':
-        IndID_list = get_all_samples(wildcards.Tissue, True)[2]
-        
-    x = expand(
-        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam", 
-        IndID = IndID_list
-        )
+#def GetSetBAM(wildcards):
+#    if wildcards.Test == 'female_test':
+#        IndID_list = get_all_samples(wildcards.Tissue, True)[0]
+#    elif wildcards.Test == 'train':
+#        IndID_list = get_all_samples(wildcards.Tissue, True)[1]
+#    elif wildcards.Test == 'test':
+#        IndID_list = get_all_samples(wildcards.Tissue, True)[2]
+#        
+#    x = expand(
+#        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam", 
+#        IndID = IndID_list
+#        )
+#    
+#    return x
     
-    return x
-    
-def GetSetJunc(wildcards):
-    if wildcards.Test == 'ThreeSamplesFemale':
-        IndID_list = get_all_samples(wildcards.Tissue, True)[0]
-    elif wildcards.Test == 'Train':
-        IndID_list = get_all_samples(wildcards.Tissue, True)[1]
-    elif wildcards.Test == 'Test':
-        IndID_list = get_all_samples(wildcards.Tissue, True)[2]
-        
-    x = expand(
-        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.junc", 
-        IndID = IndID_list
-        )
-    
-    return x
-    
-
-    
-def GetCondition1(wildcards):
-    if wildcards.Test == 'TrainTest_2tissues':
-        x = '.'.join(brain_train)
-    elif wildcards.Test == 'ThreeSamplesFemale':
-        x = '.'.join(brain_female_three_samples_only)
-    elif wildcards.Test == 'ThreeSamplesMale':
-        x = '.'.join(brain_male_three_samples_only)
-    return x
-    
-def GetCondition2(wildcards):
-    if wildcards.Test == 'TrainTest_2tissues':
-        x = '.'.join(muscle_train)
-    elif wildcards.Test == 'ThreeSamplesFemale':
-        x = '.'.join(muscle_female_three_samples_only)
-    elif wildcards.Test == 'ThreeSamplesMale':
-        x = '.'.join(muscle_male_three_samples_only)
-    return x
+#def GetSetJunc(wildcards):
+#    if wildcards.Test == 'ThreeSamplesFemale':
+#        IndID_list = get_all_samples(wildcards.Tissue, True)[0]
+#    elif wildcards.Test == 'Train':
+#        IndID_list = get_all_samples(wildcards.Tissue, True)[1]
+#    elif wildcards.Test == 'Test':
+#        IndID_list = get_all_samples(wildcards.Tissue, True)[2]
+#        
+#    x = expand(
+#        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.junc", 
+#        IndID = IndID_list
+#        )
+#    
+#    return x
     
 
-def GetTissueTestList(wildcards):
-    tissue_samples_tuple = get_all_samples(wildcards.Tissue, True)
-        
-    if wildcards.Test == 'female_test':
-        tissue_samples = tissue_samples_tuple[0]
-    elif wildcards.Test == 'train':
-        tissue_samples = tissue_samples_tuple[1]
-    elif wildcards.Test == 'test':
-        tissue_samples = tissue_samples_tuple[2]
-        
-    tissue_samples = '.'.join(tissue_samples)
+    
+#def GetCondition1(wildcards):
+#    if wildcards.Test == 'TrainTest_2tissues':
+#        x = '.'.join(brain_train)
+#    elif wildcards.Test == 'ThreeSamplesFemale':
+#        x = '.'.join(brain_female_three_samples_only)
+#    elif wildcards.Test == 'ThreeSamplesMale':
+#        x = '.'.join(brain_male_three_samples_only)
+#    return x
+    
+#def GetCondition2(wildcards):
+#    if wildcards.Test == 'TrainTest_2tissues':
+#        x = '.'.join(muscle_train)
+#    elif wildcards.Test == 'ThreeSamplesFemale':
+#        x = '.'.join(muscle_female_three_samples_only)
+#    elif wildcards.Test == 'ThreeSamplesMale':
+#        x = '.'.join(muscle_male_three_samples_only)
+#    return x
+    
+
+#def GetTissueTestList(wildcards):
+#    tissue_samples_tuple = get_all_samples(wildcards.Tissue, True)
+#        
+#    if wildcards.Test == 'female_test':
+#        tissue_samples = tissue_samples_tuple[0]
+#    elif wildcards.Test == 'train':
+#        tissue_samples = tissue_samples_tuple[1]
+#    elif wildcards.Test == 'test':
+#        tissue_samples = tissue_samples_tuple[2]
+#        
+#    tissue_samples = '.'.join(tissue_samples)
     
 
 
@@ -86,7 +86,7 @@ rule RunRMATS:
     input:
         b1 = "gtex-download/{Tissue_1}/files/rmats_{Group}.b.txt",
         b2 = "gtex-download/{Tissue_2}/files/rmats_{Group}.b.txt",
-        gtf = "Annotations/gencode.v34.primary_assembly.annotation.gtf"
+        gtf = "Annotations/gencode.v43.basic.annotation.gtf.gz"
     output:
         expand('DifferentialSplicing/rMATS/{{Tissue_1}}_v_{{Tissue_2}}_{{Group}}/output/{output_file}', output_file = rsem_output_list),
         temp(directory('/scratch/midway2/cnajar/rmats/{Tissue_1}_v_{Tissue_2}_{Group}'))

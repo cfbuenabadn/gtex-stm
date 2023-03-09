@@ -2,12 +2,25 @@ import pandas as pd
 import numpy as np
 import os
 
-genes = []
+genes_test = []
 with open('config/genes.txt', 'r') as fh:
     for line in fh:
-        genes.append(line.rstrip())
+        genes_test.append(line.rstrip())
         
+
+genes_negatives = []
+with open('config/genes.Brain_Cortex_v_Muscle_Sleketal.negatives.txt', 'r') as fh:
+    for line in fh:
+        genes_negatives.append(line.rstrip())
+
+genes_positives = []
+with open('config/genes.Brain_Cortex_v_Muscle_Sleketal.positives.txt', 'r') as fh:
+    for line in fh:
+        genes_positives.append(line.rstrip())
         
+genes_neg_pos = genes_negatives + genes_positives
+genes = genes_test + genes_neg_pos
+
 gtex_samples = pd.read_csv('config/samples.tsv', sep='\t', index_col=0)
 tissue_list = ['Adipose_Subcutaneous', 'Muscle_Skeletal', 'Arterial_Tibial', 'Breast_Mammary_Tissue',
                'Skin_Not_Sun_Exposed_Suprapubic', 'Brain_Cortex', 'Thyroid', 'Lung', 'Spleen', 'Pancreas',

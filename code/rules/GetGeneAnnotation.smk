@@ -5,10 +5,18 @@ rule DownloadHg38Ref:
         """
         wget -O- ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_34/gencode.v34.primary_assembly.annotation.gtf.gz | zcat > {output.primary_gtf}
         """
+
+rule DownloadHg38Basic:
+    output:
+        "Annotations/gencode.v43.basic.annotation.gtf.gz"
+    shell:
+        """
+        wget -O- https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_43/gencode.v43.basic.annotation.gtf.gz | zcat > {output}
+        """
         
 rule MakeGenesBed:
     input:
-        "Annotations/gencode.v34.primary_assembly.annotation.gtf",
+        "Annotations/gencode.v34.basic.annotation.gtf",
     params:
         extension = 100
     output:

@@ -17,6 +17,7 @@ localrules:
     DownloadFromGTEx_Whole_Blood,
     DownloadFromGTEx_Liver,
     DownloadHg38Ref,
+    DownloadHg38Basic,
 
 
 rule all:
@@ -47,7 +48,13 @@ rule DifferentialSplicing:
         "DifferentialSplicing/rMATS/Whole_Blood_v_Liver_female_test/output/summary.txt",
         "DifferentialSplicing/rMATS/Whole_Blood_v_Liver_train/output/summary.txt",
         "DifferentialSplicing/leafcutter/Whole_Blood_v_Liver_female_test/output/leafcutter_cluster_significance.txt",
-        "DifferentialSplicing/leafcutter/Whole_Blood_v_Liver_train/output/leafcutter_cluster_significance.txt"
+        "DifferentialSplicing/leafcutter/Whole_Blood_v_Liver_train/output/leafcutter_cluster_significance.txt",
+        "DifferentialSplicing/leafcutter/juncfiles/Whole_Blood_v_Liver/cluster_annotation.tab.gz",
+        "DifferentialSplicing/rMATS/Whole_Blood_v_Muscle_Skeletal_female_test/output/summary.txt",
+        "DifferentialSplicing/rMATS/Whole_Blood_v_Muscle_Skeletal_train/output/summary.txt",
+        "DifferentialSplicing/leafcutter/Whole_Blood_v_Muscle_Skeletal_female_test/output/leafcutter_cluster_significance.txt",
+        "DifferentialSplicing/leafcutter/Whole_Blood_v_Muscle_Skeletal_train/output/leafcutter_cluster_significance.txt",
+        "DifferentialSplicing/leafcutter/juncfiles/Whole_Blood_v_Muscle_Skeletal/cluster_annotation.tab.gz",
         
         
 rule tests:
@@ -59,3 +66,11 @@ rule tests:
         expand("Tests/PKM/stm_models/SubsetTissues_plus_one.sgom_K{knum}.rds", knum=[2, 3, 5, 10]),
         expand("Tests/PKM/stm_models/SubsetTissues_train_plus_one.sgom_K{knum}.rds", knum=[2, 3, 5, 10]),
         expand("Tests/{gene}/stm_models/Training.sgom_K{knum}.rds", gene = ["PKM", "TPM3", "SRSF3"], knum=[2, 3, 5, 10])
+
+
+
+# awk '$20 <= 0.1 && $23<=0.1 && $23>=-0.1 ' DifferentialSplicing/rMATS/Brain_Cortex_v_Muscle_Skeletal_train/output/SE.MATS.JCEC.txt | awk -F'"' '{print $4}' - | sort -u | grep -v '.1' - | shuf -n 200 > config/genes.Brain_Cortex_v_Muscle_Sleketal.negatives.txt
+
+#  awk '$20 <= 0.1 && $23>=0.1 ' DifferentialSplicing/rMATS/Brain_Cortex_v_Muscle_Skeletal_train/output/SE.MATS.JCEC.txt | awk -F'"' '{print $4}' - | sort -u | grep -v '.1' - | shuf -n 100 > config/genes.Brain_Cortex_v_Muscle_Sleketal.positives.txt
+
+# awk '$20 <= 0.1 && $23<=-0.1 ' DifferentialSplicing/rMATS/Brain_Cortex_v_Muscle_Skeletal_train/output/SE.MATS.JCEC.txt | awk -F'"' '{print $4}' - | sort -u | grep -v '.1' - | shuf -n 100 >> config/genes.Brain_Cortex_v_Muscle_Sleketal.positives.txt

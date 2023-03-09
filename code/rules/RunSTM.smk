@@ -14,8 +14,39 @@ rule RunSGOM:
         (Rscript scripts/run_sgom.R {input} {wildcards.knum} {output} || true) &> {log}
         """
         
-        
-        
+
+def GetTissueCountsList(wildcards):
+    tissue_list = wildcards.Tissues.split('.')
+    return expand("Counts/{tissue}/{gene}.Counts.csv.gz",
+                  tissue = tissue_list, gene=wildcards.gene)        
+
+
+def much_more_mem_after_first_attempt(wildcards, attempt):
+    if int(attempt) == 1:
+        return 24000
+    else:
+        return 62000
+
+rule train_ebpmf_2tissues:
+    input:
+        GetTissueCountsList,
+        "config/samples.tsv"
+    output:
+        "ebpmf_model/train_2tissues/{Tissues}-{gene}.K{K}.ebpmf.rds"
+    log:
+        "logs/{Tissues}-{gene}.K{K}.ebpmf_train.log"
+    wildcard_constraints:
+        Tissues = "Brain_Cortex.Muscle_Skeletal|Whole_Blood.Liver|Whole_Blood.Muscle_Skeletal",
+        gene = '|'.join(genes),
+        K = '2|3|5|10'
+    resources:
+        mem_mb = much_more_mem_after_first_attempt
+    shell:
+        """
+        Rscript scripts/train_ebpmf.R {wildcards.Tissues} {wildcards.gene} {wildcards.K} {output} &> {log}
+        """
+    
+
         
 ########################## Older, unused ##############################
         
