@@ -3,12 +3,13 @@ include: "rules/common.py"
 
 include: "rules/DownloadBAM.smk"
 include: "rules/GetGeneAnnotation.smk"
-include: "rules/GetCountTables.smk"
+#include: "rules/GetCountTables.smk"
 include: "rules/RunSTM.smk"
 #include: "rules/ExpressionAnalysis.smk"
 include: "rules/RunTests.smk"
 include: "rules/DifferentialSplicing.smk"
 include: "rules/Develop.smk"
+include: "rules/GetCoverageAndCounts.smk"
 
 localrules:
     all,
@@ -16,6 +17,7 @@ localrules:
     DownloadFromGTEx_Muscle_Skeletal,
     DownloadFromGTEx_Whole_Blood,
     DownloadFromGTEx_Liver,
+    DownloadFromGTEx_Brain_Hippocampus,
     DownloadHg38Ref,
     DownloadHg38Basic,
 
@@ -45,16 +47,19 @@ rule DifferentialSplicing:
         "DifferentialSplicing/leafcutter/Brain_Cortex_v_Muscle_Skeletal_female_test/output/leafcutter_cluster_significance.txt",
         "DifferentialSplicing/leafcutter/Brain_Cortex_v_Muscle_Skeletal_train/output/leafcutter_cluster_significance.txt",
         "DifferentialSplicing/leafcutter/juncfiles/Brain_Cortex_v_Muscle_Skeletal/cluster_annotation.tab.gz",
-        "DifferentialSplicing/rMATS/Whole_Blood_v_Liver_female_test/output/summary.txt",
-        "DifferentialSplicing/rMATS/Whole_Blood_v_Liver_train/output/summary.txt",
-        "DifferentialSplicing/leafcutter/Whole_Blood_v_Liver_female_test/output/leafcutter_cluster_significance.txt",
-        "DifferentialSplicing/leafcutter/Whole_Blood_v_Liver_train/output/leafcutter_cluster_significance.txt",
-        "DifferentialSplicing/leafcutter/juncfiles/Whole_Blood_v_Liver/cluster_annotation.tab.gz",
-        "DifferentialSplicing/rMATS/Whole_Blood_v_Muscle_Skeletal_female_test/output/summary.txt",
-        "DifferentialSplicing/rMATS/Whole_Blood_v_Muscle_Skeletal_train/output/summary.txt",
-        "DifferentialSplicing/leafcutter/Whole_Blood_v_Muscle_Skeletal_female_test/output/leafcutter_cluster_significance.txt",
-        "DifferentialSplicing/leafcutter/Whole_Blood_v_Muscle_Skeletal_train/output/leafcutter_cluster_significance.txt",
-        "DifferentialSplicing/leafcutter/juncfiles/Whole_Blood_v_Muscle_Skeletal/cluster_annotation.tab.gz",
+        "DifferentialSplicing/rMATS/Brain_Cortex_v_Muscle_Skeletal_male_test/output/summary.txt",
+        expand("DifferentialSplicing/rMATS/negative_tests/{Tissue}_{Sex}_test/output/summary.txt",
+            Tissue = ["Brain_Cortex", "Muscle_Skeletal", "Whole_Blood", "Liver"], Sex=["female", "male"]),
+        #"DifferentialSplicing/rMATS/Whole_Blood_v_Liver_female_test/output/summary.txt",
+        #"DifferentialSplicing/rMATS/Whole_Blood_v_Liver_train/output/summary.txt",
+        #"DifferentialSplicing/leafcutter/Whole_Blood_v_Liver_female_test/output/leafcutter_cluster_significance.txt",
+        #"DifferentialSplicing/leafcutter/Whole_Blood_v_Liver_train/output/leafcutter_cluster_significance.txt",
+        #"DifferentialSplicing/leafcutter/juncfiles/Whole_Blood_v_Liver/cluster_annotation.tab.gz",
+        #"DifferentialSplicing/rMATS/Whole_Blood_v_Muscle_Skeletal_female_test/output/summary.txt",
+        #"DifferentialSplicing/rMATS/Whole_Blood_v_Muscle_Skeletal_train/output/summary.txt",
+        #"DifferentialSplicing/leafcutter/Whole_Blood_v_Muscle_Skeletal_female_test/output/leafcutter_cluster_significance.txt",
+        #"DifferentialSplicing/leafcutter/Whole_Blood_v_Muscle_Skeletal_train/output/leafcutter_cluster_significance.txt",
+        #"DifferentialSplicing/leafcutter/juncfiles/Whole_Blood_v_Muscle_Skeletal/cluster_annotation.tab.gz",
         
         
 rule tests:
@@ -67,6 +72,22 @@ rule tests:
         expand("Tests/PKM/stm_models/SubsetTissues_train_plus_one.sgom_K{knum}.rds", knum=[2, 3, 5, 10]),
         expand("Tests/{gene}/stm_models/Training.sgom_K{knum}.rds", gene = ["PKM", "TPM3", "SRSF3"], knum=[2, 3, 5, 10])
 
+
+#rule KL_test:
+#    input:
+#        expand("ebpmf_model/train_2tissues_scores/Brain_Cortex.Muscle_Skeletal-{gene}.K2.ebpmf.rds", gene=genes)
+
+
+# awk '$20 <= 0.1 && $23>=0.1 ' DifferentialSplicing/rMATS/Brain_Cortex_v_Muscle_Skeletal_train/output/SE.MATS.JCEC.txt | awk -F'"' '{print $4}' - | sort -u | grep -v '.1' - > config/genes.Brain_Cortex_v_Muscle_Sleketal.all_positives.txt
+
+# awk '$20 <= 0.1 && $23<=-0.1 ' DifferentialSplicing/rMATS/Brain_Cortex_v_Muscle_Skeletal_train/output/SE.MATS.JCEC.txt | awk -F'"' '{print $4}' - | sort -u | grep -v '.1' - >> config/genes.Brain_Cortex_v_Muscle_Sleketal.all_positives.txt
+
+# awk '$20 >= 0.25 && $23<=0.05 && $23>=-0.05 ' DifferentialSplicing/rMATS/Brain_Cortex_v_Muscle_Skeletal_train/output/SE.MATS.JCEC.txt | awk -F'"' '{print $4}' - | sort -u | grep -v '.1' - | grep -v ENSG - > config/genes.Brain_Cortex_v_Muscle_Sleketal.negative_candidates.txt
+
+# awk 'FNR == NR { h[$1,$2]; next }; !($1 SUBSEP $2 in h)' config/genes.Brain_Cortex_v_Muscle_Sleketal.all_positives.txt config/genes.Brain_Cortex_v_Muscle_Sleketal.negative_candidates.txt > config/genes.Brain_Cortex_v_Muscle_Sleketal.all_negatives.txt
+
+
+# shuf -n 200 config/genes.Brain_Cortex_v_Muscle_Sleketal.all_negatives.txt > config/genes.Brain_Cortex_v_Muscle_Sleketal.negatives.txt
 
 
 # awk '$20 <= 0.1 && $23<=0.1 && $23>=-0.1 ' DifferentialSplicing/rMATS/Brain_Cortex_v_Muscle_Skeletal_train/output/SE.MATS.JCEC.txt | awk -F'"' '{print $4}' - | sort -u | grep -v '.1' - | shuf -n 200 > config/genes.Brain_Cortex_v_Muscle_Sleketal.negatives.txt

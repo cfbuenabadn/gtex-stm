@@ -19,83 +19,120 @@ rule DownloadFromGTEx_Brain_Cortex:
         manifest = "gtex-download/{Tissue}/files/tissue-manifest.json",
         client = "../data/gen3-client"
     output:
-        expand(
+        temp(expand(
         "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam", 
         IndID = brain_cortex_samples
-        )
+        ))
     log:
         'logs/download_{Tissue}.log' 
     wildcard_constraints:
         Tissue = 'Brain_Cortex'
+    resources:
+        mem_mb = 24000
     shell:
         """
-        {input.client} download-multiple --profile=AnVIL --manifest={input.manifest} --download-path=/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{wildcards.Tissue}/bams/ --protocol=s3
+        ({input.client} download-multiple --profile=AnVIL --manifest={input.manifest} --download-path=/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{wildcards.Tissue}/bams/ --protocol=s3) &> {log}
         """
         
 use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Muscle_Skeletal with:
     output:
-        expand(
+        temp(expand(
         "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam", 
         IndID = muscle_skeletal_samples
-        )
+        ))
     wildcard_constraints:
         Tissue = 'Muscle_Skeletal'
         
 use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Whole_Blood with:
     output:
-        expand(
+        temp(expand(
         "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam", 
         IndID = whole_blood_samples
-        )
+        ))
     wildcard_constraints:
         Tissue = 'Whole_Blood'
         
         
 use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Liver with:
     output:
-        expand(
+        temp(expand(
         "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam", 
         IndID = liver_samples
-        )
+        ))
     wildcard_constraints:
         Tissue = 'Liver'
 
-#def GetFileManifest(wildcards):
-#    manifest = "gtex_download/file_manifest/{SampleSet}.json".format(SampleSet = wildcards.SampleSet)
-#    return manifest
+use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Brain_Hippocampus with:
+    output:
+        temp(expand(
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
+        IndID = brain_hippocampus_samples
+        ))
+    wildcard_constraints:
+        Tissue = 'Brain_Hippocampus'
 
-#rule DownloadFromGTEX_ThreeSamplesFemale:
-#    input:
-#        manifest = "gtex-download/file_manifest/ThreeSamplesFemale.json",
-#        client = "../data/gen3-client"
-#    output:
-#        expand(
-#        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/bams/{/{IndID}.Aligned.sortedByCoord.out.patched.md.bam", 
-#        IndID = female_samples
-#        )
-#    log:
-#        'logs/download_SmallTest.log' 
-#    shell:
-#        """
-#        {input.client} download-multiple --profile=AnVIL --manifest={input.manifest} --download-path=/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/bams/ThreeSamplesFemale/ --protocol=s3
-#        """
+use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Brain_Hypothalamus with:
+    output:
+        expand(
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
+        IndID = brain_hypothalamus_samples
+        )
+    wildcard_constraints:
+        Tissue = 'Brain_Hypothalamus'
+
+use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Brain_Cerebellum with:
+    output:
+        expand(
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
+        IndID = brain_cerebellum_samples
+        )
+    wildcard_constraints:
+        Tissue = 'Brain_Cerebellum'
         
-#rule DownloadFromGTEX:
-#    input:
-#        manifest = "gtex-download/file_manifest/TrainTest_2tissues.json",
-#        client = "../data/gen3-client"
-#    output:
-#        expand(
-#        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/bams/TrainTest_2tissues/{IndID}.Aligned.sortedByCoord.out.patched.md.bam", 
-#        IndID = gtex_samples
-#        )
-#    log:
-#        'logs/download_TrainTest_2tissues.log' 
-#    shell:
-#        """
-#        {input.client} download-multiple --profile=AnVIL --manifest={input.manifest} --download-path=/project2/mstephens/cfbuenabadn/gtex-#stm/code/gtex-download/bams/TrainTest_2tissues/ --protocol=s3
-#        """
+use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Kidney_Cortex with:
+    output:
+        expand(
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
+        IndID = kidney_cortex_samples
+        )
+    wildcard_constraints:
+        Tissue = 'Kidney_Cortex'
+        
+use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Lung with:
+    output:
+        temp(expand(
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
+        IndID = lung_samples
+        ))
+    wildcard_constraints:
+        Tissue = 'Lung'
 
+use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Spleen with:
+    output:
+        expand(
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
+        IndID = spleen_samples
+        )
+    wildcard_constraints:
+        Tissue = 'Spleen'
+        
+use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Heart_Atrial_Appendage with:
+    output:
+        expand(
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
+        IndID = heart_atrial_appendage_samples
+        )
+    wildcard_constraints:
+        Tissue = 'Heart_Atrial_Appendage'
+        
+use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Skin_Not_Sun_Exposed_Suprapubic with:
+    output:
+        expand(
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
+        IndID = skin_not_sun_exposed_suprapubic_samples
+        )
+    wildcard_constraints:
+        Tissue = 'Skin_Not_Sun_Exposed_Suprapubic'
 
 rule BamIndex:
     input:

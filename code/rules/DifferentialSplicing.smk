@@ -75,7 +75,7 @@ rule MakeBfiles:
     log:
         "logs/differential_splicing/{Group}.{Tissue}.log"
     wildcard_constraints:
-        Group = 'female_test|test|train',
+        Group = 'male_test|male_test2|female_test|female_test2|test|train',
         Tissue = '|'.join(tissue_list)
     shell:
         """
@@ -86,24 +86,47 @@ rule RunRMATS:
     input:
         b1 = "gtex-download/{Tissue_1}/files/rmats_{Group}.b.txt",
         b2 = "gtex-download/{Tissue_2}/files/rmats_{Group}.b.txt",
-        gtf = "Annotations/gencode.v43.basic.annotation.gtf.gz"
+        gtf = "Annotations/gencode.v43.basic.annotation.gtf"
     output:
         expand('DifferentialSplicing/rMATS/{{Tissue_1}}_v_{{Tissue_2}}_{{Group}}/output/{output_file}', output_file = rsem_output_list),
-        temp(directory('/scratch/midway2/cnajar/rmats/{Tissue_1}_v_{Tissue_2}_{Group}'))
+        #temp(directory('/scratch/midway2/cnajar/rmats/{Tissue_1}_v_{Tissue_2}_{Group}'))
     log:
         'logs/differential_splicing/{Tissue_1}_v_{Tissue_2}_{Group}.rmats_run.log',
     wildcard_constraints:
-        Group = 'female_test|test|train',
+        Group = 'male_test|male_test2|female_test|female_test2|test|train',
         Tissue_1 = '|'.join(tissue_list),
         Tissue_2 = '|'.join(tissue_list)
     resources:
-        mem_mb = 42000
+        mem_mb = 62000
     conda:
         "../envs/rmats.yml"
     shell:
         """
         python  {config[rMATS]} --b1 {input.b1} --b2 {input.b2} --gtf {input.gtf} -t single --readLength 76 --nthread 8 --od DifferentialSplicing/rMATS/{wildcards.Tissue_1}_v_{wildcards.Tissue_2}_{wildcards.Group}/output/ --tmp /scratch/midway2/cnajar/rmats/{wildcards.Tissue_1}_v_{wildcards.Tissue_2}_{wildcards.Group} &> {log}
         """
+
+rule RunRMATS_negatives:
+    input:
+        b1 = "gtex-download/{Tissue}/files/rmats_{Sex}_test.b.txt",
+        b2 = "gtex-download/{Tissue}/files/rmats_{Sex}_test2.b.txt",
+        gtf = "Annotations/gencode.v43.basic.annotation.gtf"
+    output:
+        expand('DifferentialSplicing/rMATS/negative_tests/{{Tissue}}_{{Sex}}_test/output/{output_file}', output_file = rsem_output_list),
+    log:
+        'logs/differential_splicing/{Tissue}_{Sex}_test.rmats_run.log'
+    wildcard_constraints:
+        Tissue = '|'.join(tissue_list),
+        Sex = 'female|male'
+    resources:
+        mem_mb = 12000
+    conda:
+        '../envs/rmats.yml'
+    shell:
+        """
+        python  {config[rMATS]} --b1 {input.b1} --b2 {input.b2} --gtf {input.gtf} -t single --readLength 76 --nthread 8 --od DifferentialSplicing/rMATS/{wildcards.Tissue}_{wildcards.Sex}_test/output/ --tmp /scratch/midway2/cnajar/rmats/{wildcards.Tissue}_{wildcards.Sex}_test &> {log}
+        """
+
+
 
 rule MakeJuncFiles_Brain_Cortex:
     input:
@@ -157,7 +180,15 @@ use rule MakeJuncFiles_Brain_Cortex as MakeJuncFiles_Liver with:
         ) 
     wildcard_constraints:
         Tissue = 'Liver'  
-        
+       
+use rule MakeJuncFiles_Brain_Cortex as MakeJuncFiles_Brain_Hippocampus with:
+    output:
+        expand(
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.junc",
+        IndID = brain_hippocampus_samples
+        )
+    wildcard_constraints:
+        Tissue = 'Brain_Hippocampus' 
         
 rule MakeLeafcutterInputJuncFiles:
     input:
@@ -194,7 +225,7 @@ rule MakeLeafcutterInputGroupsFile:
         tissue1_list = GetTissueGroupListStr,
         tissue2_list = GetTissueGroupListStr2
     wildcard_constraints:
-        Group = 'female_test|test|train',
+        Group = 'male_test|male_test2|female_test|female_test2|test|train',
         Tissue = '|'.join(tissue_list),
         Tissue_2 = '|'.join(tissue_list)
     shell:
@@ -242,7 +273,7 @@ rule LeafcutterDS:
         "DifferentialSplicing/leafcutter/{Tissue}_v_{Tissue_2}_{Group}/output/leafcutter_effect_sizes.txt",
         "DifferentialSplicing/leafcutter/{Tissue}_v_{Tissue_2}_{Group}/output/leafcutter_cluster_significance.txt",
     wildcard_constraints:
-        Group = 'female_test|test|train',
+        Group = 'male_test|male_test2|female_test|female_test2|test|train',
         Tissue = '|'.join(tissue_list),
         Tissue_2 = '|'.join(tissue_list)
     resources:

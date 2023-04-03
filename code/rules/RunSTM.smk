@@ -32,11 +32,13 @@ rule train_ebpmf_2tissues:
         GetTissueCountsList,
         "config/samples.tsv"
     output:
-        "ebpmf_model/train_2tissues/{Tissues}-{gene}.K{K}.ebpmf.rds"
+        "ebpmf_model/train_2tissues/{Tissues}-{gene}.K{K}.ebpmf.rds",
+        "ebpmf_model/train_2tissues/plots/{Tissues}-{gene}.K{K}.ebpmf.StructurePlot.png",
+        "ebpmf_model/train_2tissues/plots/{Tissues}-{gene}.K{K}.ebpmf.Factors.png",
     log:
         "logs/{Tissues}-{gene}.K{K}.ebpmf_train.log"
     wildcard_constraints:
-        Tissues = "Brain_Cortex.Muscle_Skeletal|Whole_Blood.Liver|Whole_Blood.Muscle_Skeletal",
+        Tissues = "Brain_Cortex.Muscle_Skeletal|Whole_Blood.Liver|Whole_Blood.Muscle_Skeletal|Brain_Cortex.Brain_Hypothalamus|Brain_Cortex.Brain_Hippocampus|Brain_Hypothalamus.Brain_Cerebellum",
         gene = '|'.join(genes),
         K = '2|3|5|10'
     resources:
@@ -45,8 +47,48 @@ rule train_ebpmf_2tissues:
         """
         Rscript scripts/train_ebpmf.R {wildcards.Tissues} {wildcards.gene} {wildcards.K} {output} &> {log}
         """
-    
+        
+        
+use rule train_ebpmf_2tissues as train_ebpmf_3tissues with:
+    output:
+        "ebpmf_model/train_3tissues/{Tissues}-{gene}.K{K}.ebpmf.rds",
+        "ebpmf_model/train_3tissues/plots/{Tissues}-{gene}.K{K}.ebpmf.StructurePlot.png",
+        "ebpmf_model/train_3tissues/plots/{Tissues}-{gene}.K{K}.ebpmf.Factors.png",
+    wildcard_constraints:
+        Tissue = "Brain_Cortex.Brain_Hippocampus.Muscle_Skeletal.Whole_Blood.Liver",
+        gene = '|'.join(genes),
+        K = '2|3|5|10'
+        
+use rule train_ebpmf_2tissues as train_ebpmf_5tissues with:
+    output:
+        "ebpmf_model/train_5tissues/{Tissues}-{gene}.K{K}.ebpmf.rds",
+        "ebpmf_model/train_5tissues/plots/{Tissues}-{gene}.K{K}.ebpmf.StructurePlot.png",
+        "ebpmf_model/train_5tissues/plots/{Tissues}-{gene}.K{K}.ebpmf.Factors.png",
+    wildcard_constraints:
+        Tissue = "Brain_Cortex.Brain_Hippocampus.Muscle_Skeletal",
+        gene = '|'.join(genes),
+        K = '2|3|5|10'
 
+rule ebpmf_lm:
+    input:
+        "ebpmf_model/train_2tissues/{tissue1}.{tissue2}-{gene}.K2.ebpmf.rds"
+    output:
+        rds = "ebpmf_model/train_2tissues_scores/{tissue1}.{tissue2}-{gene}.K2.ebpmf.rds",
+        structure = "ebpmf_model/train_2tissues_plots/{tissue1}.{tissue2}-{gene}.K2.ebpmf.png",
+        f1 = "ebpmf_model/train_2tissues_plots/{tissue1}.{tissue2}-{gene}.K2.factor1.png",
+        f2 = "ebpmf_model/train_2tissues_plots/{tissue1}.{tissue2}-{gene}.K2.factor2.png",
+    log:
+        "logs/{tissue1}.{tissue2}-{gene}.K2.plot_train.log"
+    wildcard_constraints:
+        gene = '|'.join(genes),
+        tissue1 = 'Brain_Cortex|Brain_Hypothalamus',
+        tissue2 = 'Brain_Hippocampus|Muscle_Skeletal|Brain_Cerebellum|Brain_Hypothalamus'
+    resources:
+        mem_mb = much_more_mem_after_first_attempt
+    shell:
+        """
+        Rscript scripts/ebpmf_test.R {input} {wildcards.tissue1} {wildcards.tissue2} {wildcards.gene} {output.rds} {output.structure} {output.f1} {output.f2} &> {log}
+        """
         
 ########################## Older, unused ##############################
         

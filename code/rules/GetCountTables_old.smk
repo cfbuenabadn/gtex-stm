@@ -14,8 +14,8 @@ rule MakeGeneBam:
         bam = "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{Tissue}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
         bai = "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{Tissue}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.bai"
     output:
-        bam = "coverage/BAMs/{gene}/{Tissue}.{IndID}.bam",
-        bai = "coverage/BAMs/{gene}/{Tissue}.{IndID}.bam.bai"
+        bam = temp("coverage/BAMs/{gene}/{Tissue}.{IndID}.bam"),
+        bai = temp("coverage/BAMs/{gene}/{Tissue}.{IndID}.bam.bai")
     wildcard_constraints:
         gene = "|".join(genes)
     log:
@@ -42,18 +42,26 @@ rule makeGene_bed:
         python scripts/makebed.py {wildcards.gene} &> {log}
         """
 
+def much_more_mem_after_first_attempt(wildcards, attempt):
+    if int(attempt) == 1:
+        return 24000
+    else:
+        return 62000
+
 rule GetGeneCoverage:
     input:
         bam = "coverage/BAMs/{gene}/{Tissue}.{IndID}.bam",
         bai = "coverage/BAMs/{gene}/{Tissue}.{IndID}.bam.bai",
         bed = "coverage/tmp/{gene}.bed"
     output:
-        "coverage/bed/{gene}/{Tissue}.{IndID}.bed.gz",
+        temp("coverage/bed/{gene}/{Tissue}.{IndID}.bed.gz"),
     log:
         "logs/genecoverage.{gene}.{Tissue}.{IndID}.log"
+    resources:
+        mem_mb = much_more_mem_after_first_attempt
     wildcard_constraints:
         gene = "|".join(genes),
-        Tissue = '|'.join(['Brain_Cortex', 'Muscle_Skeletal', 'Liver', 'Whole_Blood', 'Lung'])
+        Tissue = '|'.join(tissue_list) #['Brain_Cortex', 'Muscle_Skeletal', 'Liver', 'Whole_Blood', 'Lung'])
     shell:
         """
         (bedtools genomecov -5 -bga -ibam {input.bam} | bedtools intersect -a - -b {input.bed} | bedtools sort -i - | gzip - > {output}) &> {log}
@@ -73,7 +81,7 @@ rule GetCountsGene_generalized:
         "logs/{Tissue}.{gene}.Counts.log"
     wildcard_constraints:
         gene = "|".join(genes),
-        Tissue = '|'.join(['Brain_Cortex', 'Muscle_Skeletal', 'Liver', 'Whole_Blood', 'Lung'])
+        Tissue = '|'.join(tissue_list) #['Brain_Cortex', 'Muscle_Skeletal', 'Liver', 'Whole_Blood', 'Lung'])
     shell:
         """
         python scripts/getCountsTable2.py --output {output} {input} &> {log}

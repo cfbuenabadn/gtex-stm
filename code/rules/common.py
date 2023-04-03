@@ -19,7 +19,14 @@ with open('config/genes.Brain_Cortex_v_Muscle_Sleketal.positives.txt', 'r') as f
         genes_positives.append(line.rstrip())
         
 genes_neg_pos = genes_negatives + genes_positives
-genes = genes_test + genes_neg_pos
+
+quick_test_genes = ['NDUFA3', 'SRSF3', #'SRSF6', 
+        'RTN2', 'SNRNP27', 'SPHK2', 'SUOX', 'TRAF3IP2', 'UCP3', #'UPF3A', 
+        'RPL24', 'PRELID3B', 
+        'PSAP', 'OAZ1', 'OAS1', 'RPS13', 'GPX3', 'HSP90AB1']
+
+genes = sorted(set(genes_test + genes_neg_pos + quick_test_genes))
+
 
 gtex_samples = pd.read_csv('config/samples.tsv', sep='\t', index_col=0)
 tissue_list = ['Adipose_Subcutaneous', 'Muscle_Skeletal', 'Arterial_Tibial', 'Breast_Mammary_Tissue',
@@ -37,6 +44,18 @@ brain_cortex_samples = gtex_samples.loc[gtex_samples.tissue_id == 'Brain_Cortex'
 muscle_skeletal_samples = gtex_samples.loc[gtex_samples.tissue_id == 'Muscle_Skeletal'].index
 whole_blood_samples = gtex_samples.loc[gtex_samples.tissue_id == 'Whole_Blood'].index
 liver_samples = gtex_samples.loc[gtex_samples.tissue_id == 'Liver'].index
+brain_hippocampus_samples = gtex_samples.loc[gtex_samples.tissue_id == 'Brain_Hippocampus'].index
+brain_hypothalamus_samples = gtex_samples.loc[gtex_samples.tissue_id == 'Brain_Hypothalamus'].index
+brain_cerebellum_samples = gtex_samples.loc[gtex_samples.tissue_id == 'Brain_Cerebellum'].index
+
+kidney_cortex_samples = gtex_samples.loc[gtex_samples.tissue_id == 'Kidney_Cortex'].index
+lung_samples = gtex_samples.loc[gtex_samples.tissue_id == 'Lung'].index
+heart_atrial_appendage_samples = gtex_samples.loc[gtex_samples.tissue_id == 'Heart_Atrial_Appendage'].index
+spleen_samples = gtex_samples.loc[gtex_samples.tissue_id == 'Spleen'].index
+skin_not_sun_exposed_suprapubic_samples = gtex_samples.loc[gtex_samples.tissue_id == 'Skin_Not_Sun_Exposed_Suprapubic'].index
+
+
+
 
     
 rsem_output_list = ['summary.txt']
