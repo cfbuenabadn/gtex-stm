@@ -46,7 +46,7 @@ def much_more_mem_after_first_attempt(wildcards, attempt):
     if int(attempt) == 1:
         return 24000
     else:
-        return 62000
+        return 64000
 
 rule GetGeneCoverage:
     input:

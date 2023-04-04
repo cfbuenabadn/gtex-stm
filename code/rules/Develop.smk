@@ -59,3 +59,7 @@ rule collect_coverage:
         expand("coverage/samples/Brain_Cerebellum/{IndID}.bed.gz", IndID = brain_cerebellum_samples),
         expand("coverage/samples/Skin_Not_Sun_Exposed_Suprapubic/{IndID}.bed.gz", IndID = skin_not_sun_exposed_suprapubic_samples),
     
+rule collect_ebpmf:
+    input:
+        expand("ebpmf_model/train_5tissues/Brain_Cortex.Brain_Hippocampus.Muscle_Skeletal-{gene}.K{K}.ebpmf.rds",
+        gene=genes, K = [2, 3, 5])

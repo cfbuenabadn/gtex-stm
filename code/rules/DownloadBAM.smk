@@ -82,10 +82,10 @@ use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Brain_Hypothalamus wi
 
 use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Brain_Cerebellum with:
     output:
-        expand(
+        temp(expand(
         "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
         IndID = brain_cerebellum_samples
-        )
+        ))
     wildcard_constraints:
         Tissue = 'Brain_Cerebellum'
         
@@ -118,19 +118,19 @@ use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Spleen with:
         
 use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Heart_Atrial_Appendage with:
     output:
-        expand(
+        temp(expand(
         "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
         IndID = heart_atrial_appendage_samples
-        )
+        ))
     wildcard_constraints:
         Tissue = 'Heart_Atrial_Appendage'
         
 use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Skin_Not_Sun_Exposed_Suprapubic with:
     output:
-        expand(
+        temp(expand(
         "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
         IndID = skin_not_sun_exposed_suprapubic_samples
-        )
+        ))
     wildcard_constraints:
         Tissue = 'Skin_Not_Sun_Exposed_Suprapubic'
 
