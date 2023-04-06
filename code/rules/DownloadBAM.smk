@@ -91,10 +91,10 @@ use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Brain_Cerebellum with
         
 use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Kidney_Cortex with:
     output:
-        expand(
+        temp(expand(
         "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
         IndID = kidney_cortex_samples
-        )
+        ))
     wildcard_constraints:
         Tissue = 'Kidney_Cortex'
         

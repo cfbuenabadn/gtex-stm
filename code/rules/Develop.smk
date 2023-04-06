@@ -58,8 +58,17 @@ rule collect_coverage:
         expand("coverage/samples/Heart_Atrial_Appendage/{IndID}.bed.gz", IndID = heart_atrial_appendage_samples),
         expand("coverage/samples/Brain_Cerebellum/{IndID}.bed.gz", IndID = brain_cerebellum_samples),
         expand("coverage/samples/Skin_Not_Sun_Exposed_Suprapubic/{IndID}.bed.gz", IndID = skin_not_sun_exposed_suprapubic_samples),
+        expand("coverage/samples/Kidney_Cortex/{IndID}.bed.gz", IndID = kidney_cortex_samples),
+        
+Tissues = ".".join(["Brain_Cerebellum", "Brain_Cortex", "Brain_Hippocampus", 
+                            "Heart_Atrial_Appendage", "Kidney_Cortex", "Liver", "Lung", 
+                            "Muscle_Skeletal", "Skin_Not_Sun_Exposed_Suprapubic", "Whole_Blood"])
     
 rule collect_ebpmf:
     input:
-        expand("ebpmf_model/train_5tissues/Brain_Cortex.Brain_Hippocampus.Muscle_Skeletal.Whole_Blood.Liver-{gene}.K{K}.ebpmf.rds",
+        #expand("ebpmf_model/train_5tissues/models/{gene}-Brain_Cortex.Brain_Hippocampus.Muscle_Skeletal.Whole_Blood.Liver.K{K}.ebpmf.rds",
+        #gene=genes, K = [2, 3, 5]),
+        expand("ebpmf_model/train_10tissues/models/{gene}-" + Tissues + ".K{K}.ebpmf.rds",
         gene=genes, K = [2, 3, 5])
+        #expand("ebpmf_model/train_10tissues/models/{gene}-" + Tissues + ".K{K}.ebpmf.rds",
+        #gene=["PKM"], K = [2, 3, 5])

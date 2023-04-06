@@ -17,8 +17,10 @@ tissue_list = args[1]
 geneName = args[2]
 K = as.integer(args[3])
 output = args[4]
-structure_plot = args[5]
-factor_plot = args[6]
+structure_plot_tissue_id = args[5]
+structure_plot_sex = args[6]
+structure_plot_tissue_sex_id = args[7]
+factor_plot = args[8]
 
 # Split the tissue_list string into a vector of tissue names
 tissue_list <- str_split(tissue_list, '[.]')[[1]]
@@ -56,13 +58,17 @@ saveRDS(list(gene=geneName,
 
 
 # Structure plot function
-plot_structure <- function(fit, gene_name, kfactors){
+plot_structure <- function(fit, gene_name, kfactors, annotation = NULL, filter_by = 'tissue_id'){
     EL = fit$EL
     indis = rownames(EL)
     tissue_label  <- c()
-    for (x in rownames(EL)){
-        tissue_label <- c(tissue_label, strsplit(x, '[.]')[[1]][1])
+    
+    
+    if (!is.null(annotation)) {
+        sample_names <- EL %>% rownames() %>% sub("^[^.]+\\.", "", .)
+        tissue_label <- annotation %>% filter(rownames(.) %in% sample_names) %>% pull(filter_by) 
     }
+    
     annotation_ = data.frame(sample_id = indis,tissue_label = factor(tissue_label))
     print(head(annotation_))
     print(class(annotation_))
@@ -80,10 +86,21 @@ plot_structure <- function(fit, gene_name, kfactors){
                          legend_title_size = 12, legend_key_size = 1, legend_text_size = 12)
 }
 
+samples$tissue_sex_id <- paste(samples$tissue_id, samples$sex, sep = '-')
+
+options(repr.plot.width=7.5, repr.plot.height=10)
 
 # plot structure plot
-png(filename=structure_plot)
-plot_structure(fit_ebpmf, geneName, K)
+png(filename=structure_plot_tissue_id)
+plot_structure(fit_ebpmf, geneName, K, annotation = samples, filter_by = 'tissue_id')
+dev.off()
+
+png(filename=structure_plot_sex)
+plot_structure(fit_ebpmf, geneName, K, annotation = samples, filter_by = 'sex')
+dev.off()
+
+png(filename=structure_plot_tissue_sex_id)
+plot_structure(fit_ebpmf, geneName, K, annotation = samples, filter_by = 'tissue_sex_id')
 dev.off()
 
 
@@ -92,13 +109,13 @@ dev.off()
 # Select height of the plot depending on the number of factors
 getPlotHeight <- function(K) {
   if (K == 2) {
-    output <- 6
+    output <- 4.5
   } else if (K == 3) {
     output <- 8
   } else if (K == 5) {
-    output <- 11
-  } else if (K == 10) {
     output <- 18
+  } else if (K == 10) {
+    output <- 25
   } 
   return(output)
 }

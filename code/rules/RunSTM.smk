@@ -61,13 +61,29 @@ use rule train_ebpmf_2tissues as train_ebpmf_3tissues with:
         
 use rule train_ebpmf_2tissues as train_ebpmf_5tissues with:
     output:
-        "ebpmf_model/train_5tissues/{Tissues}-{gene}.K{K}.ebpmf.rds",
-        "ebpmf_model/train_5tissues/plots/{Tissues}-{gene}.K{K}.ebpmf.StructurePlot.png",
-        "ebpmf_model/train_5tissues/plots/{Tissues}-{gene}.K{K}.ebpmf.Factors.png",
+        "ebpmf_model/train_5tissues/models/{gene}-{Tissues}.K{K}.ebpmf.rds",
+        "ebpmf_model/train_5tissues/plots/{gene}-{Tissues}.K{K}.ebpmf.StructurePlot.tissue_id.png",
+        "ebpmf_model/train_5tissues/plots/{gene}-{Tissues}.K{K}.ebpmf.StructurePlot.sex.png",
+        "ebpmf_model/train_5tissues/plots/{gene}-{Tissues}.K{K}.ebpmf.StructurePlot.tissue_sex_id.png",
+        "ebpmf_model/train_5tissues/plots/{gene}-{Tissues}.K{K}.ebpmf.Factors.png",
     wildcard_constraints:
-        Tissue = "Brain_Cortex.Brain_Hippocampus.Muscle_Skeletal.Whole_Blood.Liver",
+        Tissues = "Brain_Cortex.Brain_Hippocampus.Muscle_Skeletal.Whole_Blood.Liver",
         gene = '|'.join(genes),
-        K = '2|3|5|10'
+        K = '2|3|4|5|10'
+        
+use rule train_ebpmf_2tissues as train_ebpmf_10tissues with:
+    output:
+        "ebpmf_model/train_10tissues/models/{gene}-{Tissues}.K{K}.ebpmf.rds",
+        "ebpmf_model/train_10tissues/plots/{gene}-{Tissues}.K{K}.ebpmf.StructurePlot.tissue_id.png",
+        "ebpmf_model/train_10tissues/plots/{gene}-{Tissues}.K{K}.ebpmf.StructurePlot.sex.png",
+        "ebpmf_model/train_10tissues/plots/{gene}-{Tissues}.K{K}.ebpmf.StructurePlot.tissue_sex_id.png",
+        "ebpmf_model/train_10tissues/plots/{gene}-{Tissues}.K{K}.ebpmf.Factors.png",
+    wildcard_constraints:
+        Tissues = ".".join(["Brain_Cerebellum", "Brain_Cortex", "Brain_Hippocampus", 
+                            "Heart_Atrial_Appendage", "Kidney_Cortex", "Liver", "Lung", 
+                            "Muscle_Skeletal", "Skin_Not_Sun_Exposed_Suprapubic", "Whole_Blood"]),
+        gene = '|'.join(genes),
+        K = '2|3|4|5|10'
 
 rule ebpmf_lm:
     input:
