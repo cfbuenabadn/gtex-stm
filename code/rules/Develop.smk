@@ -61,5 +61,5 @@ rule collect_coverage:
     
 rule collect_ebpmf:
     input:
-        expand("ebpmf_model/train_5tissues/Brain_Cortex.Brain_Hippocampus.Muscle_Skeletal-{gene}.K{K}.ebpmf.rds",
+        expand("ebpmf_model/train_5tissues/Brain_Cortex.Brain_Hippocampus.Muscle_Skeletal.Whole_Blood.Liver-{gene}.K{K}.ebpmf.rds",
         gene=genes, K = [2, 3, 5])

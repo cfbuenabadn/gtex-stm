@@ -55,7 +55,7 @@ use rule train_ebpmf_2tissues as train_ebpmf_3tissues with:
         "ebpmf_model/train_3tissues/plots/{Tissues}-{gene}.K{K}.ebpmf.StructurePlot.png",
         "ebpmf_model/train_3tissues/plots/{Tissues}-{gene}.K{K}.ebpmf.Factors.png",
     wildcard_constraints:
-        Tissue = "Brain_Cortex.Brain_Hippocampus.Muscle_Skeletal.Whole_Blood.Liver",
+        Tissue = "Brain_Cortex.Brain_Hippocampus.Muscle_Skeletal",
         gene = '|'.join(genes),
         K = '2|3|5|10'
         
@@ -65,7 +65,7 @@ use rule train_ebpmf_2tissues as train_ebpmf_5tissues with:
         "ebpmf_model/train_5tissues/plots/{Tissues}-{gene}.K{K}.ebpmf.StructurePlot.png",
         "ebpmf_model/train_5tissues/plots/{Tissues}-{gene}.K{K}.ebpmf.Factors.png",
     wildcard_constraints:
-        Tissue = "Brain_Cortex.Brain_Hippocampus.Muscle_Skeletal",
+        Tissue = "Brain_Cortex.Brain_Hippocampus.Muscle_Skeletal.Whole_Blood.Liver",
         gene = '|'.join(genes),
         K = '2|3|5|10'
 

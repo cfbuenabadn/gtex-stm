@@ -7,6 +7,10 @@ library(tidyverse)
 library(data.table)
 library(ebpmf)
 library(NNLM)
+library(Matrix)
+library(CountClust)
+library(fastTopics)
+library(FNN)
 
 args = commandArgs(trailingOnly=TRUE)
 tissue_list = args[1]
