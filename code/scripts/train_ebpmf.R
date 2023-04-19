@@ -20,7 +20,6 @@ output = args[4]
 structure_plot_tissue_id = args[5]
 structure_plot_sex = args[6]
 structure_plot_tissue_sex_id = args[7]
-factor_plot = args[8]
 
 # Split the tissue_list string into a vector of tissue names
 tissue_list <- str_split(tissue_list, '[.]')[[1]]
@@ -44,6 +43,7 @@ for (tissue in tissue_list){
 X <- X %>% as.matrix()
 
 # Run the ebpmf algorithm on the gene expression data
+set.seed(0)
 fit_ebpmf = ebpmf_identity(X,K=K)
 
 # Save model to RDS file
@@ -51,7 +51,9 @@ saveRDS(list(gene=geneName,
              geneCounts=X,
              assays = c('RNASeq'),
              tissues = tissue_list,
-             fit_ebpmf = fit_ebpmf
+             fit_ebpmf = fit_ebpmf,
+             coords = colnames(X),
+             samples = rownames(X)
             ),
         file=paste(output,sep='')
        )
@@ -66,7 +68,7 @@ plot_structure <- function(fit, gene_name, kfactors, annotation = NULL, filter_b
     
     if (!is.null(annotation)) {
         sample_names <- EL %>% rownames() %>% sub("^[^.]+\\.", "", .)
-        tissue_label <- annotation %>% filter(rownames(.) %in% sample_names) %>% pull(filter_by) 
+        tissue_label <- annotation[sample_names, ] %>% pull(filter_by)  
     }
     
     annotation_ = data.frame(sample_id = indis,tissue_label = factor(tissue_label))
@@ -86,54 +88,23 @@ plot_structure <- function(fit, gene_name, kfactors, annotation = NULL, filter_b
                          legend_title_size = 12, legend_key_size = 1, legend_text_size = 12)
 }
 
+options(repr.plot.width=7.5, repr.plot.height=10)
+
+
 samples$tissue_sex_id <- paste(samples$tissue_id, samples$sex, sep = '-')
 
 options(repr.plot.width=7.5, repr.plot.height=10)
 
 # plot structure plot
-png(filename=structure_plot_tissue_id)
+pdf(file=structure_plot_tissue_id)
 plot_structure(fit_ebpmf, geneName, K, annotation = samples, filter_by = 'tissue_id')
 dev.off()
 
-png(filename=structure_plot_sex)
+pdf(file=structure_plot_sex)
 plot_structure(fit_ebpmf, geneName, K, annotation = samples, filter_by = 'sex')
 dev.off()
 
-png(filename=structure_plot_tissue_sex_id)
+pdf(file=structure_plot_tissue_sex_id)
 plot_structure(fit_ebpmf, geneName, K, annotation = samples, filter_by = 'tissue_sex_id')
 dev.off()
-
-
-# Plot factors
-
-# Select height of the plot depending on the number of factors
-getPlotHeight <- function(K) {
-  if (K == 2) {
-    output <- 4.5
-  } else if (K == 3) {
-    output <- 8
-  } else if (K == 5) {
-    output <- 18
-  } else if (K == 10) {
-    output <- 25
-  } 
-  return(output)
-}
-
-plot_height <- getPlotHeight(K)
-
-# set color palette for factors
-colores = RColorBrewer::brewer.pal(K,  "Paired")
-options(repr.plot.width=15, repr.plot.height=plot_height)
-
-png(filename=factor_plot)
-par(mfrow=c(K, 1), mar=c(5, 5, 2, 1), oma=c(0, 0, 0, 0), cex.lab = 2, cex.axis = 1.5)
-for(k in 1:K) {
-  plot(runmed(fit_ebpmf$res$qf$Ef_smooth[,k],k=43),type='l',col=colores[k], lwd=2, 
-     ylab= paste0("factor ", as.character(k)),
-     xlab = 'position')
-}
-dev.off()
-
-
 

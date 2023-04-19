@@ -16,7 +16,7 @@ def much_more_mem_after_first_attempt(wildcards, attempt):
     if int(attempt) == 1:
         return 24000
     else:
-        return 62000
+        return 72000
 
 rule MakeBedFromBam:
     input:
@@ -41,9 +41,9 @@ rule GetGeneBed:
         bed = "coverage/samples/{Tissue}/{IndID}.bed.gz",
         gene_bed = "coverage/tmp/{Gene}.bed"
     output:
-        "coverage/bed/{Gene}/{Tissue}.{IndID}.bed.gz"
-    log:
-        "logs/genecoverage.{Gene}.{Tissue}.{IndID}.log"
+        temp("coverage/bed/{Gene}/{Tissue}.{IndID}.bed.gz")
+    #log:
+    #    "logs/genecoverage.{Gene}.{Tissue}.{IndID}.log"
     resources:
         mem_mb = much_more_mem_after_first_attempt
     wildcard_constraints:
@@ -51,7 +51,7 @@ rule GetGeneBed:
         Tissue = '|'.join(tissue_list)
     shell:
         """
-        (bedtools intersect -a {input.bed} -b {input.gene_bed} | bedtools sort -i - | gzip - > {output} ) &> {log}
+        bedtools intersect -a {input.bed} -b {input.gene_bed} | bedtools sort -i - | gzip - > {output}  #&> {log}
         """
         
 def GetCountsBedsPerTissue(wildcards):

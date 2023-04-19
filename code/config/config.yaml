@@ -5,3 +5,6 @@
 samples: config/samples.tsv
 
 rMATS: "/home/cnajar/rmats-turbo/rmats.py"
+R: "/software/R-4.1.0-el8-x86_64/bin/R"
+Rscript: "/software/R-4.1.0-el8-x86_64/bin/Rscript"
+python: "/project2/mstephens/cfbuenabadn/anaconda3/bin/python"

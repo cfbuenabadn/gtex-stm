@@ -4,8 +4,8 @@ print(.libPaths())
 library(dplyr)
 library(tidyverse)
 library(data.table)
-library(ebpmf, lib.loc="/project2/mstephens/cfbuenabadn/R.4.1")
-library(NNLM, lib.loc="/project2/mstephens/cfbuenabadn/R.4.1")
+library(ebpmf)#, lib.loc="/project2/mstephens/cfbuenabadn/R.4.1")
+library(NNLM)#, lib.loc="/project2/mstephens/cfbuenabadn/R.4.1")
 library(Matrix)
 library(CountClust)
 library(fastTopics)
@@ -17,35 +17,35 @@ tissue1 = args[2]
 tissue2 = args[3]
 geneName = args[4]
 output = args[5]
-structure_plot = args[6]
-factor1_plot = args[7]
-factor2_plot = args[8]
+# structure_plot = args[6]
+# factor1_plot = args[7]
+# factor2_plot = args[8]
 
 K = 2
 
-plot_structure <- function(fit, gene_name, kfactors){
-    EL = fit$EL
-    indis = rownames(EL)
-    tissue_label  <- c()
-    for (x in rownames(EL)){
-        tissue_label <- c(tissue_label, strsplit(x, '[.]')[[1]][1])
-    }
-    annotation_ = data.frame(sample_id = indis,tissue_label = factor(tissue_label))
-    print(head(annotation_))
-    print(class(annotation_))
-    print(class(annotation_$tissue_label)) 
+# plot_structure <- function(fit, gene_name, kfactors){
+#     EL = fit$EL
+#     indis = rownames(EL)
+#     tissue_label  <- c()
+#     for (x in rownames(EL)){
+#         tissue_label <- c(tissue_label, strsplit(x, '[.]')[[1]][1])
+#     }
+#     annotation_ = data.frame(sample_id = indis,tissue_label = factor(tissue_label))
+#     print(head(annotation_))
+#     print(class(annotation_))
+#     print(class(annotation_$tissue_label)) 
     
-    colnames(EL) <- sprintf("factor%d",seq(1:kfactors))
-    colores = RColorBrewer::brewer.pal(kfactors,  "Paired")
+#     colnames(EL) <- sprintf("factor%d",seq(1:kfactors))
+#     colores = RColorBrewer::brewer.pal(kfactors,  "Paired")
     
-   StructureGGplot(EL, annotation = annotation_,
-                      palette = colores, figure_title = gene_name,
-                      axis_tick = list(axis_ticks_length = 0.1, 
-                                       axis_ticks_lwd_y = 1, 
-                                       axis_ticks_lwd_x = 1, 
-                                       axis_label_size = 12, axis_label_face = "bold"),
-                         legend_title_size = 12, legend_key_size = 1, legend_text_size = 12)
-}
+#    StructureGGplot(EL, annotation = annotation_,
+#                       palette = colores, figure_title = gene_name,
+#                       axis_tick = list(axis_ticks_length = 0.1, 
+#                                        axis_ticks_lwd_y = 1, 
+#                                        axis_ticks_lwd_x = 1, 
+#                                        axis_label_size = 12, axis_label_face = "bold"),
+#                          legend_title_size = 12, legend_key_size = 1, legend_text_size = 12)
+# }
 
 lmp <- function (modelobject) {
     if (class(modelobject) != "lm") stop("Not an object of class 'lm' ")
@@ -55,23 +55,34 @@ lmp <- function (modelobject) {
     return(p)
 }
 
+shrink_coords <- function(counts, coords) {
+  counts_zero <- colSums(counts)
+  K_left <- which.max(counts_zero > 0) %>% as.numeric()
+  K_right <- (which.max(rev(counts_zero) > 0) - 1) %>% as.numeric()
+  coords_for_EF <- coords[K_left:(length(coords) - K_right)]
+  return(coords_for_EF)
+}
+
 dir <- '/project2/mstephens/cfbuenabadn/'
 ebpmf_dir <- paste0(dir, 'gtex-stm/code/ebpmf_model/train_2tissues/')
 annotation = read.table(paste0(dir, 'gtex-stm/code/config/samples.tsv'), sep='\t', header=1, row.names=1)
 
 model = readRDS(input_rds)
 
-png(filename=structure_plot)
-plot_structure(model$fit_ebpmf, geneName, K)
-dev.off()
+coords <-  model$geneCounts %>% colnames()
+new_coords <- shrink_coords(model$geneCounts, coords)
 
-png(filename=factor1_plot)
-plot(model$fit_ebpmf$EF[,1],type='l',ylab='',main=paste(geneName, 'factor 1'))
-dev.off()
+# png(filename=structure_plot)
+# plot_structure(model$fit_ebpmf, geneName, K)
+# dev.off()
 
-png(filename=factor2_plot)
-plot(model$fit_ebpmf$EF[,2],type='l',ylab='',main=paste(geneName, 'factor 2'))
-dev.off()
+# png(filename=factor1_plot)
+# plot(model$fit_ebpmf$EF[,1],type='l',ylab='',main=paste(geneName, 'factor 1'))
+# dev.off()
+
+# png(filename=factor2_plot)
+# plot(model$fit_ebpmf$EF[,2],type='l',ylab='',main=paste(geneName, 'factor 2'))
+# dev.off()
 
 
 
@@ -106,7 +117,7 @@ for (tissue in tissue_list){
     }
 
 
-X <- X %>% as.matrix()
+X <- X %>% select(all_of(new_coords)) %>% as.matrix() 
 
 FF <- as.matrix(model$fit_ebpmf$EF)
 fit_init = init_poisson_nmf(X, F = FF, init.method = 'random')
@@ -147,9 +158,7 @@ for (group_test in female_test_list){
     X <- rbind(X, tissue_counts)
     }
 
-
-X <- X %>% as.matrix()
-
+X <- X %>% select(all_of(new_coords)) %>% as.matrix() 
 
 fit_init = init_poisson_nmf(X, F = FF, init.method = 'random')
 out = fit_poisson_nmf(X,fit0=fit_init,update.factors = NULL)
@@ -163,9 +172,6 @@ rownames(EL_neg_tissue1) <- rownames(out$L)
 y <- EL_neg_tissue1$k1 %>% as.numeric()
 fit_neg_tissue1 <- lm(y~x)
 pval_neg_tissue1 <- lmp(fit_neg_tissue1)
-
-
-
 
 
 
@@ -183,8 +189,7 @@ for (group_test in female_test_list){
     X <- rbind(X, tissue_counts)
     }
 
-
-X <- X %>% as.matrix()
+X <- X %>% select(all_of(new_coords)) %>% as.matrix() 
 
 fit_init = init_poisson_nmf(X, F = FF, init.method = 'random')
 out = fit_poisson_nmf(X,fit0=fit_init,update.factors = NULL)
@@ -199,13 +204,15 @@ y <- EL_neg_tissue2$k1 %>% as.numeric()
 fit_neg_tissue2 <- lm(y~x)
 pval_neg_tissue2 <- lmp(fit_neg_tissue2)
 
+print('Is it when saving?')
+
 saveRDS(list(gene=geneName,
              tissues = tissue_list,
              pval_train=pval_train,
              pval_female_test=pval_female_test,
-             pval_neg_tissue1 <- pval_neg_tissue1,
-             pval_neg_tissue2 <- pval_neg_tissue2
+             pval_neg_tissue1 = pval_neg_tissue1,
+             pval_neg_tissue2 = pval_neg_tissue2
             ),
-        file=paste(output,sep='')
+        file=paste(output, sep='')
        )
 

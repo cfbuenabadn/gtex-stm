@@ -32,11 +32,6 @@ rule KL_test:
         expand("ebpmf_model/train_2tissues_scores/Brain_Cortex.Brain_Hippocampus-{gene}.K2.ebpmf.rds", gene=['NRXN1', 'NRXN2', 'NRXN3']),
         expand("ebpmf_model/train_2tissues_scores/Brain_Hypothalamus.Brain_Cerebellum-{gene}.K2.ebpmf.rds", gene=['NRXN1', 'NRXN2', 'NRXN3']),
         
-rule NRXN:
-    input:
-        expand("ebpmf_model/train_2tissues/{Tissues}-{gene}.K{K}.ebpmf.rds",
-               Tissues = ["Brain_Cortex.Brain_Hippocampus"], # , "Brain_Hypothalamus.Brain_Cerebellum"],
-               gene = ['NRXN1', 'NRXN2', 'NRXN3'], K = [2, 3, 5, 10]),
 
 rule collect_counts:
     input:
@@ -64,11 +59,20 @@ Tissues = ".".join(["Brain_Cerebellum", "Brain_Cortex", "Brain_Hippocampus",
                             "Heart_Atrial_Appendage", "Kidney_Cortex", "Liver", "Lung", 
                             "Muscle_Skeletal", "Skin_Not_Sun_Exposed_Suprapubic", "Whole_Blood"])
     
+
+rule collect_lm:
+    input:
+        expand("ebpmf_model/train_2tissues_scores/Brain_Cortex.Muscle_Skeletal/{gene}.K2.ebpmf.rds", gene=genes),
+        expand("ebpmf_model/train_2tissues/Brain_Cortex.Muscle_Skeletal/plots/{geneName}.K2.factors.pdf",
+        geneName=genes)
+
 rule collect_ebpmf:
     input:
-        #expand("ebpmf_model/train_5tissues/models/{gene}-Brain_Cortex.Brain_Hippocampus.Muscle_Skeletal.Whole_Blood.Liver.K{K}.ebpmf.rds",
-        #gene=genes, K = [2, 3, 5]),
-        expand("ebpmf_model/train_10tissues/models/{gene}-" + Tissues + ".K{K}.ebpmf.rds",
-        gene=genes, K = [2, 3, 5])
-        #expand("ebpmf_model/train_10tissues/models/{gene}-" + Tissues + ".K{K}.ebpmf.rds",
-        #gene=["PKM"], K = [2, 3, 5])
+        expand("ebpmf_model/train_10tissues/models/{gene}.K{K}.ebpmf.rds",
+        gene=["PKM", "AR"] + quick_test_genes, #genes, 
+        K = [2, 3, 4, 5]),
+        expand("ebpmf_model/train_10tissues/plots/{geneName}.K{kfactors}.factors.pdf",
+        geneName=["PKM", "AR"] + quick_test_genes, #genes, 
+        kfactors = [2, 3, 4, 5]),
+        
+        
