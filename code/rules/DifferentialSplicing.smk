@@ -86,7 +86,7 @@ rule RunRMATS:
     input:
         b1 = "gtex-download/{Tissue_1}/files/rmats_{Group}.b.txt",
         b2 = "gtex-download/{Tissue_2}/files/rmats_{Group}.b.txt",
-        gtf = "Annotations/gencode.v43.basic.annotation.gtf"
+        gtf = "Annotations/gencode.v34.primary_assembly.annotation.gtf" #"Annotations/gencode.v43.basic.annotation.gtf"
     output:
         expand('DifferentialSplicing/rMATS/{{Tissue_1}}_v_{{Tissue_2}}_{{Group}}/output/{output_file}', output_file = rsem_output_list),
         #temp(directory('/scratch/midway2/cnajar/rmats/{Tissue_1}_v_{Tissue_2}_{Group}'))
@@ -109,7 +109,7 @@ rule RunRMATS_negatives:
     input:
         b1 = "gtex-download/{Tissue}/files/rmats_{Sex}_test.b.txt",
         b2 = "gtex-download/{Tissue}/files/rmats_{Sex}_test2.b.txt",
-        gtf = "Annotations/gencode.v43.basic.annotation.gtf"
+        gtf = "Annotations/gencode.v34.primary_assembly.annotation.gtf"
     output:
         expand('DifferentialSplicing/rMATS/negative_tests/{{Tissue}}_{{Sex}}_test/output/{output_file}', output_file = rsem_output_list),
     log:
@@ -148,7 +148,7 @@ rule MakeJuncFiles_Brain_Cortex:
         for bamfile in $(ls gtex-download/{wildcards.Tissue}/bams/*.Aligned.sortedByCoord.out.patched.md.bam); do
             (echo Converting $bamfile to $bamfile.junc) &>> {log}
             (samtools index $bamfile) &>> {log}
-            (regtools junctions extract -s 0 -a 8 -m 50 -M 500000 $bamfile -o $bamfile.junc) &>> {log}
+            (regtools junctions extract -s XS -a 8 -m 50 -M 500000 $bamfile -o $bamfile.junc) &>> {log}
         done;
         """
         

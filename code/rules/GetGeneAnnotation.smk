@@ -16,7 +16,7 @@ rule DownloadHg38Basic:
         
 rule MakeGenesBed:
     input:
-        "Annotations/gencode.v43.basic.annotation.gtf",
+        "Annotations/gencode.v34.primary_assembly.annotation.gtf",
     params:
         extension = 50
     output:

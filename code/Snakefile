@@ -40,26 +40,7 @@ rule all:
         #        knum=[3, 5, 10]
         #        )
         
-rule DifferentialSplicing:
-    input:
-        "DifferentialSplicing/rMATS/Brain_Cortex_v_Muscle_Skeletal_female_test/output/summary.txt",
-        "DifferentialSplicing/rMATS/Brain_Cortex_v_Muscle_Skeletal_train/output/summary.txt",
-        "DifferentialSplicing/leafcutter/Brain_Cortex_v_Muscle_Skeletal_female_test/output/leafcutter_cluster_significance.txt",
-        "DifferentialSplicing/leafcutter/Brain_Cortex_v_Muscle_Skeletal_train/output/leafcutter_cluster_significance.txt",
-        "DifferentialSplicing/leafcutter/juncfiles/Brain_Cortex_v_Muscle_Skeletal/cluster_annotation.tab.gz",
-        "DifferentialSplicing/rMATS/Brain_Cortex_v_Muscle_Skeletal_male_test/output/summary.txt",
-        expand("DifferentialSplicing/rMATS/negative_tests/{Tissue}_{Sex}_test/output/summary.txt",
-            Tissue = ["Brain_Cortex", "Muscle_Skeletal", "Whole_Blood", "Liver"], Sex=["female", "male"]),
-        #"DifferentialSplicing/rMATS/Whole_Blood_v_Liver_female_test/output/summary.txt",
-        #"DifferentialSplicing/rMATS/Whole_Blood_v_Liver_train/output/summary.txt",
-        #"DifferentialSplicing/leafcutter/Whole_Blood_v_Liver_female_test/output/leafcutter_cluster_significance.txt",
-        #"DifferentialSplicing/leafcutter/Whole_Blood_v_Liver_train/output/leafcutter_cluster_significance.txt",
-        #"DifferentialSplicing/leafcutter/juncfiles/Whole_Blood_v_Liver/cluster_annotation.tab.gz",
-        #"DifferentialSplicing/rMATS/Whole_Blood_v_Muscle_Skeletal_female_test/output/summary.txt",
-        #"DifferentialSplicing/rMATS/Whole_Blood_v_Muscle_Skeletal_train/output/summary.txt",
-        #"DifferentialSplicing/leafcutter/Whole_Blood_v_Muscle_Skeletal_female_test/output/leafcutter_cluster_significance.txt",
-        #"DifferentialSplicing/leafcutter/Whole_Blood_v_Muscle_Skeletal_train/output/leafcutter_cluster_significance.txt",
-        #"DifferentialSplicing/leafcutter/juncfiles/Whole_Blood_v_Muscle_Skeletal/cluster_annotation.tab.gz",
+
         
         
 rule tests:

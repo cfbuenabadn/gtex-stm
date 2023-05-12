@@ -96,6 +96,14 @@ def GetTissueBAM(wildcards):
     
     return bams
 
+def GetTissueBai(wildcards):
+    bams = expand(
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.bai", 
+        IndID = gtex_samples.loc[gtex_samples.tissue_id == wildcards.Tissue].index
+        )
+    
+    return bams
+
 
 def GetTissueJunc(wildcards):
     junc = expand(

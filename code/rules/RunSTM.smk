@@ -25,7 +25,7 @@ def much_more_mem_after_first_attempt(wildcards, attempt):
     if int(attempt) == 1:
         return 24000
     else:
-        return 78000
+        return 62000
 
 rule train_ebpmf_2tissues:
     input:

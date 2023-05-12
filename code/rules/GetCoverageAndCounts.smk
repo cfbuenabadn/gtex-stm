@@ -1,81 +1,104 @@
-rule makeGene_bed:
-    input:
-        "Annotations/genes.tab.gz",
-    output:
-        "coverage/tmp/{gene}.bed"
-    wildcard_constraints:
-        gene = "|".join(genes)
-    log:
-        "logs/genebed.{gene}_bed.log"
-    shell:
-        """
-        python scripts/makebed.py {wildcards.gene} &> {log}
-        """
+#rule makeGene_bed:
+#    input:
+#        "Annotations/genes.tab.gz",
+#    output:
+#        "coverage/tmp/{gene}.bed"
+#    wildcard_constraints:
+#        gene = "|".join(genes)
+#    log:
+#        "logs/genebed.{gene}_bed.log"
+#    shell:
+#        """
+#        python scripts/makebed.py {wildcards.gene} &> {log}
+#        """
 
 def much_more_mem_after_first_attempt(wildcards, attempt):
     if int(attempt) == 1:
         return 24000
     else:
-        return 72000
+        return 62000
 
-rule MakeBedFromBam:
+#rule MakeBedFromBam:
+#    input:
+#        bam = "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{Tissue}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
+#        bai = "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-#download/{Tissue}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.bai"
+#    output:
+#        "coverage/samples/{Tissue}/{IndID}.bed.gz"
+#    log:
+#        "logs/bamcoverage.{Tissue}.{IndID}.log"
+#    resources:
+#        mem_mb = much_more_mem_after_first_attempt
+#    wildcard_constraints:
+#        gene = "|".join(genes),
+#        Tissue = '|'.join(tissue_list)
+#    shell:
+#        """
+#        (bedtools genomecov -5 -bga -ibam {input.bam} | bedtools sort -i - | gzip - > {output}) &> {log}
+#        """
+
+rule GetBigWigs:
     input:
         bam = "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{Tissue}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
         bai = "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{Tissue}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.bai"
     output:
-        "coverage/samples/{Tissue}/{IndID}.bed.gz"
+        "coverage/bigwigs/{Tissue}/{IndID}.bw"
+    resources:
+        mem_mb = 42000,
     log:
-        "logs/bamcoverage.{Tissue}.{IndID}.log"
+        "logs/bigwigs/{Tissue}.{IndID}.log"
+    shell:
+        """
+        (bamCoverage -b {input.bam} -o {output}) &> {log}
+        """
+
+
+rule GetBedsAndTabix:
+    input:
+        bam = "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{Tissue}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
+        bai = "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{Tissue}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.bai"
+    output:
+        bed = "coverage/bed/{Tissue}/{IndID}.bed.bgz",
+        tabix = "coverage/bed/{Tissue}/{IndID}.bed.bgz.tbi",
     resources:
         mem_mb = much_more_mem_after_first_attempt
     wildcard_constraints:
-        gene = "|".join(genes),
-        Tissue = '|'.join(tissue_list)
-    shell:
-        """
-        (bedtools genomecov -5 -bga -ibam {input.bam} | bedtools sort -i - | gzip - > {output}) &> {log}
-        """
-        
-rule GetGeneBed:
-    input:
-        bed = "coverage/samples/{Tissue}/{IndID}.bed.gz",
-        gene_bed = "coverage/tmp/{Gene}.bed"
-    output:
-        temp("coverage/bed/{Gene}/{Tissue}.{IndID}.bed.gz")
-    #log:
-    #    "logs/genecoverage.{Gene}.{Tissue}.{IndID}.log"
-    resources:
-        mem_mb = much_more_mem_after_first_attempt
-    wildcard_constraints:
-        Gene = "|".join(genes),
-        Tissue = '|'.join(tissue_list)
-    shell:
-        """
-        bedtools intersect -a {input.bed} -b {input.gene_bed} | bedtools sort -i - | gzip - > {output}  #&> {log}
-        """
-        
-def GetCountsBedsPerTissue(wildcards):
-    tissue_samples = gtex_samples.loc[gtex_samples.tissue_id == wildcards.Tissue].index
-    bed_samples = expand("coverage/bed/{gene}/{Tissue}.{{IndID}}.bed.gz".format(gene=wildcards.gene, Tissue=wildcards.Tissue), IndID = tissue_samples)
-    return bed_samples
-
-rule GetCountsGene_generalized:
-    input:
-        GetCountsBedsPerTissue
-    output:
-        "Counts/{Tissue}/{gene}.Counts.csv.gz"
+        Tissue = "|".join(tissue_list)
     log:
-        "logs/{Tissue}.{gene}.Counts.log"
-    wildcard_constraints:
-        Gene = "|".join(genes),
-        Tissue = '|'.join(tissue_list)
+        "logs/bed_and_tabix/{Tissue}.{IndID}.log"
     shell:
         """
-        python scripts/getCountsTable2.py --output {output} {input} &> {log}
+        (bedtools genomecov -5 -bga -ibam {input.bam} | bgzip > {output.bed}) &> {log};
+        (tabix -p bed {output.bed}) &>> {log}
         """
         
 
-    
-    
-    
-   
+
+rule featureCounts:
+    input:
+        bam = GetTissueBAM,
+        bai = GetTissueBai,
+        annotations = "Annotations/gencode.v34.primary_assembly.annotation.gtf"
+    output:
+        "featureCounts/{Tissue}/Counts.txt"
+    threads:
+        2
+    wildcard_constraints:
+        Tissue = "|".join(tissue_list)
+    resources:
+        mem = 42000,
+        cpus_per_node = 2,
+    log:
+        "logs/featureCounts/{Tissue}.log"
+    shell:
+        """
+        featureCounts -p -T {threads} --ignoreDup --primary -a {input.annotations} -o {output} {input.bam} &> {log}
+        """
+
+
+
+
+
+
+
+
+        

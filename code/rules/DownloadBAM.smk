@@ -28,7 +28,7 @@ rule DownloadFromGTEx_Brain_Cortex:
     wildcard_constraints:
         Tissue = 'Brain_Cortex'
     resources:
-        mem_mb = 24000
+        mem_mb = 42000
     shell:
         """
         ({input.client} download-multiple --profile=AnVIL --manifest={input.manifest} --download-path=/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{wildcards.Tissue}/bams/ --protocol=s3) &> {log}

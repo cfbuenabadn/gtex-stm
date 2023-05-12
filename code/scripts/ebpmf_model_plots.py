@@ -192,8 +192,7 @@ def plot_samples_track(counts, annotation, gtf, gene_name = '', count_data=True,
     
     
     fig, ax = plt.subplots(nrows = (K + 3), figsize=(15, K_ax_ysize + gtf_ax_ysize), 
-                           gridspec_kw={'height_ratios': height_ratios, 
-                                                                       'wspace': 0.3, 'hspace': 0.6})
+                           gridspec_kw={'height_ratios': height_ratios, 'wspace': 0.3, 'hspace': 0.6})
     
     PlotGTF_ax(gtf, plot_cds=False, plot_nmd=True, collapse_transcripts=False, ax=ax[-1])
 
@@ -217,7 +216,7 @@ def plot_samples_track(counts, annotation, gtf, gene_name = '', count_data=True,
             label += ' (counts)'
         else:
             label += r' ($LF$)'
-        ax[i].text(0.1, 1.1, label, transform=ax[i].transAxes, size=14)
+        ax[i].text(0.1, 1.0, label, transform=ax[i].transAxes, size=14)
         if i < K-1:
             ax[i].set_xticks([])
             
