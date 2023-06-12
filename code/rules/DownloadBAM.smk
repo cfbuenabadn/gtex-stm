@@ -1,6 +1,6 @@
 rule MakeFileManifestJson:
     input:
-        "../data/file-manifest.json",
+        "manifests/file-manifest.json",
         '../data/sample.tsv',
         '../data/participant.tsv'
     output:
@@ -17,7 +17,7 @@ rule MakeFileManifestJson:
 rule DownloadFromGTEx_Brain_Cortex:
     input:
         manifest = "gtex-download/{Tissue}/files/tissue-manifest.json",
-        client = "../data/gen3-client"
+        client = "gen3-client"
     output:
         temp(expand(
         "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam", 
