@@ -31,7 +31,7 @@ rule DownloadFromGTEx_Brain_Cortex:
         mem_mb = 42000
     shell:
         """
-        ({input.client} download-multiple --profile=AnVIL --manifest={input.manifest} --download-path=/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{wildcards.Tissue}/bams/ --protocol=s3) &> {log}
+        (./{input.client} download-multiple --profile=AnVIL --manifest={input.manifest} --download-path=/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{wildcards.Tissue}/bams/ --protocol=s3) &> {log}
         """
         
 use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Muscle_Skeletal with:
@@ -73,10 +73,10 @@ use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Brain_Hippocampus wit
 
 use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Brain_Hypothalamus with:
     output:
-        expand(
+        temp(expand(
         "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
         IndID = brain_hypothalamus_samples
-        )
+        ))
     wildcard_constraints:
         Tissue = 'Brain_Hypothalamus'
 
@@ -109,10 +109,10 @@ use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Lung with:
 
 use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Spleen with:
     output:
-        expand(
+        temp(expand(
         "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
         IndID = spleen_samples
-        )
+        ))
     wildcard_constraints:
         Tissue = 'Spleen'
         
@@ -133,6 +133,74 @@ use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Skin_Not_Sun_Exposed_
         ))
     wildcard_constraints:
         Tissue = 'Skin_Not_Sun_Exposed_Suprapubic'
+        
+
+use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Cells_Cultured_fibroblasts with:
+    output:
+        expand(
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
+        IndID = fibroblast_samples
+        )
+    wildcard_constraints:
+        Tissue = 'Cells_Cultured_fibroblasts'
+        
+use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_LCL with:
+    output:
+        expand(
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
+        IndID = LCL_samples
+        )
+    wildcard_constraints:
+        Tissue = 'Cells_EBV-transformed_lymphocytes'
+        
+use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Brain_Frontal_Cortex_BA9 with:
+    output:
+        expand(
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
+        IndID = BA9_samples
+        )
+    wildcard_constraints:
+        Tissue = 'Brain_Frontal_Cortex_BA9'
+        
+use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Brain_Anterior_cingulate_cortex_BA24 with:
+    output:
+        expand(
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
+        IndID = BA24_samples
+        )
+    wildcard_constraints:
+        Tissue = 'Brain_Anterior_cingulate_cortex_BA24'
+        
+use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Brain_Putamen_basal_ganglia with:
+    output:
+        expand(
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
+        IndID = putamen_samples
+        )
+    wildcard_constraints:
+        Tissue = 'Brain_Putamen_basal_ganglia'
+
+use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Brain_Caudate_basal_ganglia with:
+    output:
+        expand(
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
+        IndID = caudate_samples
+        )
+    wildcard_constraints:
+        Tissue = 'Brain_Caudate_basal_ganglia'
+        
+
+use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Brain_Cerebellar_Hemisphere with:
+    output:
+        expand(
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
+        IndID = cerebellarh_samples
+        )
+    wildcard_constraints:
+        Tissue = 'Brain_Cerebellar_Hemisphere'
+
+
+
 
 rule BamIndex:
     input:

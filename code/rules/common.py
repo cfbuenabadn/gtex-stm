@@ -23,16 +23,18 @@ genes_neg_pos = genes_negatives + genes_positives
 quick_test_genes = ['NDUFA3', 'SRSF3', #'SRSF6', 
         'RTN2', 'SNRNP27', 'SPHK2', 'SUOX', 'TRAF3IP2', 'UCP3', #'UPF3A', 
         'RPL24', 'PRELID3B', 
-        'PSAP', 'OAZ1', 'OAS1', 'RPS13', 'GPX3', 'HSP90AB1']
+        'PSAP', 'OAZ1', 'OAS1', 'RPS13', 'GPX3', 'HSP90AB1', "FBXO44"]
 
-genes = sorted(set(genes_test + genes_neg_pos + quick_test_genes))
+genes = sorted(set(genes_test + genes_neg_pos + quick_test_genes)) + ['ABI2']
 
 
 gtex_samples = pd.read_csv('config/samples.tsv', sep='\t', index_col=0)
 tissue_list = ['Adipose_Subcutaneous', 'Muscle_Skeletal', 'Arterial_Tibial', 'Breast_Mammary_Tissue',
                'Skin_Not_Sun_Exposed_Suprapubic', 'Brain_Cortex', 'Thyroid', 'Lung', 'Spleen', 'Pancreas',
                'Heart_Atrial_Appendage', 'Heart_Left_Ventricle', 'Brain_Cerebellum', 'Cells_Cultured_fibroblasts', 
-               'Whole_Blood', 'Artery_Aorta', 'Brain_Hypothalamus', 'Brain_Hippocampus', 'Liver', 'Kidney_Cortex'
+               'Whole_Blood', 'Artery_Aorta', 'Brain_Hypothalamus', 'Brain_Hippocampus', 'Liver', 'Kidney_Cortex',
+               'Cells_EBV-transformed_lymphocytes', 'Brain_Frontal_Cortex_BA9', 'Brain_Anterior_cingulate_cortex_BA24',
+               'Brain_Putamen_basal_ganglia', 'Brain_Caudate_basal_ganglia', 'Brain_Cerebellar_Hemisphere'
               ]
 
 
@@ -53,6 +55,17 @@ lung_samples = gtex_samples.loc[gtex_samples.tissue_id == 'Lung'].index
 heart_atrial_appendage_samples = gtex_samples.loc[gtex_samples.tissue_id == 'Heart_Atrial_Appendage'].index
 spleen_samples = gtex_samples.loc[gtex_samples.tissue_id == 'Spleen'].index
 skin_not_sun_exposed_suprapubic_samples = gtex_samples.loc[gtex_samples.tissue_id == 'Skin_Not_Sun_Exposed_Suprapubic'].index
+
+LCL_samples = gtex_samples.loc[gtex_samples.tissue_id == 'Cells_EBV-transformed_lymphocytes'].index
+fibroblast_samples = gtex_samples.loc[gtex_samples.tissue_id == 'Cells_Cultured_fibroblasts'].index
+
+BA9_samples = gtex_samples.loc[gtex_samples.tissue_id == 'Brain_Frontal_Cortex_BA9'].index
+BA24_samples =  gtex_samples.loc[gtex_samples.tissue_id == 'Brain_Anterior_cingulate_cortex_BA24'].index
+putamen_samples = gtex_samples.loc[gtex_samples.tissue_id == 'Brain_Putamen_basal_ganglia'].index 
+caudate_samples = gtex_samples.loc[gtex_samples.tissue_id == 'Brain_Caudate_basal_ganglia'].index 
+cerebellarh_samples = gtex_samples.loc[gtex_samples.tissue_id == 'Brain_Cerebellar_Hemisphere'].index 
+
+
 
 
 

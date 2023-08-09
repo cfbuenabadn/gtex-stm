@@ -18,6 +18,7 @@ localrules:
     DownloadFromGTEx_Whole_Blood,
     DownloadFromGTEx_Liver,
     DownloadFromGTEx_Brain_Hippocampus,
+    DownloadFromGTEx_Brain_Hypothalamus,
     DownloadHg38Ref,
     DownloadHg38Basic,
 

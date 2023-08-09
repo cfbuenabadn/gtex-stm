@@ -190,6 +190,99 @@ use rule MakeJuncFiles_Brain_Cortex as MakeJuncFiles_Brain_Hippocampus with:
     wildcard_constraints:
         Tissue = 'Brain_Hippocampus' 
         
+use rule MakeJuncFiles_Brain_Cortex as MakeJuncFiles_Brain_Hypothalamus with:
+    output:
+        expand(
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.junc",
+        IndID = brain_hypothalamus_samples
+        )
+    wildcard_constraints:
+        Tissue = 'Brain_Hypothalamus' 
+        
+use rule MakeJuncFiles_Brain_Cortex as MakeJuncFiles_Brain_Cerebellum with:
+    output:
+        expand(
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.junc",
+        IndID = brain_cerebellum_samples
+        )
+    wildcard_constraints:
+        Tissue = 'Brain_Cerebellum' 
+        
+use rule MakeJuncFiles_Brain_Cortex as MakeJuncFiles_Skin_Not_Sun_Exposed_Suprapubic with:
+    output:
+        expand(
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.junc",
+        IndID = skin_not_sun_exposed_suprapubic_samples
+        )
+    wildcard_constraints:
+        Tissue = 'Skin_Not_Sun_Exposed_Suprapubic' 
+        
+use rule MakeJuncFiles_Brain_Cortex as MakeJuncFiles_Cells_Cultured_fibroblasts with:
+    output:
+        expand(
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.junc",
+        IndID = fibroblast_samples
+        )
+    wildcard_constraints:
+        Tissue = 'Cells_Cultured_fibroblasts' 
+        
+use rule MakeJuncFiles_Brain_Cortex as MakeJuncFiles_LCLs with:
+    output:
+        expand(
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.junc",
+        IndID = LCL_samples
+        )
+    wildcard_constraints:
+        Tissue = 'Cells_EBV-transformed_lymphocytes' 
+        
+use rule MakeJuncFiles_Brain_Cortex as MakeJuncFiles_Brain_Frontal_Cortex_BA9 with:
+    output:
+        expand(
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.junc",
+        IndID = BA9_samples
+        )
+    wildcard_constraints:
+        Tissue = 'Brain_Frontal_Cortex_BA9'
+        
+use rule MakeJuncFiles_Brain_Cortex as MakeJuncFiles_Brain_Anterior_cingulate_cortex_BA24 with:
+    output:
+        expand(
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.junc",
+        IndID = BA24_samples
+        )
+    wildcard_constraints:
+        Tissue = 'Brain_Anterior_cingulate_cortex_BA24'
+        
+use rule MakeJuncFiles_Brain_Cortex as MakeJuncFiles_Brain_Putamen_basal_ganglia with:
+    output:
+        expand(
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.junc",
+        IndID = putamen_samples
+        )
+    wildcard_constraints:
+        Tissue = 'Brain_Putamen_basal_ganglia'  
+        
+use rule MakeJuncFiles_Brain_Cortex as MakeJuncFiles_Brain_Caudate_basal_ganglia with:
+    output:
+        expand(
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.junc",
+        IndID = caudate_samples
+        )
+    wildcard_constraints:
+        Tissue = 'Brain_Caudate_basal_ganglia'
+        
+        
+use rule MakeJuncFiles_Brain_Cortex as MakeJuncFiles_Brain_Cerebellar_Hemisphere with:
+    output:
+        expand(
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.junc",
+        IndID = cerebellarh_samples
+        )
+    wildcard_constraints:
+        Tissue = 'Brain_Cerebellar_Hemisphere'        
+        
+        
+        
 rule MakeLeafcutterInputJuncFiles:
     input:
         Tissue_1_Junc = GetTissueJunc,

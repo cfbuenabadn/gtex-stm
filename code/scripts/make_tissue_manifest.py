@@ -16,7 +16,7 @@ def get_tissue_samples(annotation, tissue_id):
 
 
 def select_json(tissue_samples):
-    f = open('../data/file-manifest.json')
+    f = open('manifests/file-manifest.json')
     data = json.load(f)
 
     selected_json = []
