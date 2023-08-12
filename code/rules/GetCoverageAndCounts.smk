@@ -26,8 +26,8 @@ rule GetBedsAndTabix:
         bam = "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{Tissue}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
         bai = "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{Tissue}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.bai"
     output:
-        bed = "coverage/bed/{Tissue}/{IndID}.bed.bgz",
-        tabix = "coverage/bed/{Tissue}/{IndID}.bed.bgz.tbi",
+        bed = "coverage/bed/{Tissue}/{IndID}.bed.gz",
+        tabix = "coverage/bed/{Tissue}/{IndID}.bed.gz.tbi",
     resources:
         mem_mb = much_more_mem_after_first_attempt
     wildcard_constraints:

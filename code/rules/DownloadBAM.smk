@@ -36,10 +36,10 @@ rule DownloadFromGTEx_Brain_Cortex:
         
 use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Muscle_Skeletal with:
     output:
-        temp(expand(
+        expand(
         "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam", 
         IndID = muscle_skeletal_samples
-        ))
+        )
     wildcard_constraints:
         Tissue = 'Muscle_Skeletal'
         
@@ -164,28 +164,28 @@ use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Brain_Frontal_Cortex_
         
 use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Brain_Anterior_cingulate_cortex_BA24 with:
     output:
-        expand(
+        temp(expand(
         "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
         IndID = BA24_samples
-        )
+        ))
     wildcard_constraints:
         Tissue = 'Brain_Anterior_cingulate_cortex_BA24'
         
 use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Brain_Putamen_basal_ganglia with:
     output:
-        expand(
+        temp(expand(
         "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
         IndID = putamen_samples
-        )
+        ))
     wildcard_constraints:
         Tissue = 'Brain_Putamen_basal_ganglia'
 
 use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Brain_Caudate_basal_ganglia with:
     output:
-        expand(
+        temp(expand(
         "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
         IndID = caudate_samples
-        )
+        ))
     wildcard_constraints:
         Tissue = 'Brain_Caudate_basal_ganglia'
         
