@@ -2,6 +2,26 @@ import pandas as pd
 import numpy as np
 import os
 
+prueba_genes = ['ENSG00000172009', 'ENSG00000112081', 'ENSG00000067225', 'ENSG00000132879']
+
+top_genes = ['ENSG00000196531', 'ENSG00000196535', 'ENSG00000166925',
+       'ENSG00000167642', 'ENSG00000125744', 'ENSG00000139116',
+       'ENSG00000196586', 'ENSG00000170175', 'ENSG00000204681',
+       'ENSG00000168710', 'ENSG00000139218', 'ENSG00000100030',
+       'ENSG00000137094', 'ENSG00000110931', 'ENSG00000116754',
+       'ENSG00000116857', 'ENSG00000174437', 'ENSG00000114796',
+       'ENSG00000160469', 'ENSG00000120798', 'ENSG00000082258',
+       'ENSG00000183020', 'ENSG00000135052', 'ENSG00000109184',
+       'ENSG00000134250', 'ENSG00000151498', 'ENSG00000099814',
+       'ENSG00000173575', 'ENSG00000072422', 'ENSG00000117625',
+       'ENSG00000169020', 'ENSG00000157404', 'ENSG00000197321',
+       'ENSG00000112531', 'ENSG00000165802', 'ENSG00000114098',
+       'ENSG00000162735', 'ENSG00000114416', 'ENSG00000047188',
+       'ENSG00000136295', 'ENSG00000124380', 'ENSG00000109917',
+       'ENSG00000122359', 'ENSG00000125834', 'ENSG00000105048',
+       'ENSG00000134313', 'ENSG00000077522', 'ENSG00000197386',
+       'ENSG00000151729', 'ENSG00000168214']
+
 genes_test = []
 with open('config/genes.txt', 'r') as fh:
     for line in fh:
@@ -159,6 +179,19 @@ def GetTissueGroupJunc2(wildcards):
     
     return junc
     
+tissue_list = ['Brain_Anterior_cingulate_cortex_BA24',
+'Brain_Frontal_Cortex_BA9',  
+'Heart_Atrial_Appendage',
+'Lung',
+'Skin_Not_Sun_Exposed_Suprapubic',
+'Brain_Cortex',                          
+'Brain_Putamen_basal_ganglia',  
+'Liver',                   
+'Muscle_Skeletal',  
+'Whole_Blood']
+
+selected_genes = pd.read_csv('../data/selected_genes.bed', sep='\t', 
+                             names = ['chrom', 'start', 'end', 'gene', 'gene_symbol', 'strand'])
     
 # import json
 

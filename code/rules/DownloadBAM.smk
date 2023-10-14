@@ -17,7 +17,6 @@ rule MakeFileManifestJson:
 rule DownloadFromGTEx_Brain_Cortex:
     input:
         manifest = "gtex-download/{Tissue}/files/tissue-manifest.json",
-        client = "gen3-client"
     output:
         temp(expand(
         "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam", 
@@ -31,15 +30,15 @@ rule DownloadFromGTEx_Brain_Cortex:
         mem_mb = 42000
     shell:
         """
-        (./{input.client} download-multiple --profile=AnVIL --manifest={input.manifest} --download-path=/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{wildcards.Tissue}/bams/ --protocol=s3) &> {log}
+        (./gen3-client download-multiple --profile=AnVIL --manifest={input.manifest} --download-path=/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{wildcards.Tissue}/bams/ --protocol=s3) &> {log}
         """
         
 use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Muscle_Skeletal with:
     output:
-        expand(
+        temp(expand(
         "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam", 
         IndID = muscle_skeletal_samples
-        )
+        ))
     wildcard_constraints:
         Tissue = 'Muscle_Skeletal'
         
@@ -155,10 +154,10 @@ use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_LCL with:
         
 use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Brain_Frontal_Cortex_BA9 with:
     output:
-        expand(
+        temp(expand(
         "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
         IndID = BA9_samples
-        )
+        ))
     wildcard_constraints:
         Tissue = 'Brain_Frontal_Cortex_BA9'
         
@@ -192,10 +191,10 @@ use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Brain_Caudate_basal_g
 
 use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Brain_Cerebellar_Hemisphere with:
     output:
-        expand(
+        temp(expand(
         "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
         IndID = cerebellarh_samples
-        )
+        ))
     wildcard_constraints:
         Tissue = 'Brain_Cerebellar_Hemisphere'
 

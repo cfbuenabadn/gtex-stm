@@ -77,6 +77,8 @@ rule MakeBfiles:
     wildcard_constraints:
         Group = 'male_test|male_test2|female_test|female_test2|test|train',
         Tissue = '|'.join(tissue_list)
+    resources:
+        mem_mb = 4000
     shell:
         """
         python scripts/make_rmats_input_files.py --group {wildcards.Group} --tissue {wildcards.Tissue} --tissue_list {params.tissue_list} --output {output} &> {log}
@@ -97,7 +99,7 @@ rule RunRMATS:
         Tissue_1 = '|'.join(tissue_list),
         Tissue_2 = '|'.join(tissue_list)
     resources:
-        mem_mb = 62000
+        mem_mb = 48000
     conda:
         "../envs/rmats.yml"
     shell:
@@ -118,12 +120,12 @@ rule RunRMATS_negatives:
         Tissue = '|'.join(tissue_list),
         Sex = 'female|male'
     resources:
-        mem_mb = 12000
+        mem_mb = 24000
     conda:
         '../envs/rmats.yml'
     shell:
         """
-        python  {config[rMATS]} --b1 {input.b1} --b2 {input.b2} --gtf {input.gtf} -t single --readLength 76 --nthread 8 --od DifferentialSplicing/rMATS/{wildcards.Tissue}_{wildcards.Sex}_test/output/ --tmp /scratch/midway2/cnajar/rmats/{wildcards.Tissue}_{wildcards.Sex}_test &> {log}
+        python  {config[rMATS]} --b1 {input.b1} --b2 {input.b2} --gtf {input.gtf} -t single --readLength 76 --nthread 8 --od DifferentialSplicing/rMATS/negative_tests/{wildcards.Tissue}_{wildcards.Sex}_test/output/ --tmp /scratch/midway2/cnajar/rmats/{wildcards.Tissue}_{wildcards.Sex}_test &> {log}
         """
 
 
@@ -281,7 +283,24 @@ use rule MakeJuncFiles_Brain_Cortex as MakeJuncFiles_Brain_Cerebellar_Hemisphere
     wildcard_constraints:
         Tissue = 'Brain_Cerebellar_Hemisphere'        
         
-        
+use rule MakeJuncFiles_Brain_Cortex as MakeJuncFiles_Heart_Atrial_Appendage with:
+    output:
+        expand(
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.junc",
+        IndID = heart_atrial_appendage_samples
+        )
+    wildcard_constraints:
+        Tissue = 'Heart_Atrial_Appendage'    
+
+
+use rule MakeJuncFiles_Brain_Cortex as MakeJuncFiles_Lung with:
+    output:
+        expand(
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.junc",
+        IndID = lung_samples
+        )
+    wildcard_constraints:
+        Tissue = 'Lung' 
         
 rule MakeLeafcutterInputJuncFiles:
     input:

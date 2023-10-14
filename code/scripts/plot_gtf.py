@@ -276,3 +276,59 @@ def PlotGTF_ax(gene_gtf, ax, plot_nmd=False, plot_cds=False, collapse_transcript
     ax.spines['top'].set_visible(False)
     ax.set_xticks([])
     ax.set_yticks([])
+
+
+def PlotGene(gene_gtf, plot_nmd=False, plot_cds=False, collapse_transcripts=True, ax=None):
+    pc_gtf = gene_gtf.loc[gene_gtf.transcript_type == 'protein_coding']
+    nmd_gtf = gene_gtf.loc[gene_gtf.transcript_type.isin(['nonsense_mediated_decay', 'retained_intron'])]
+    
+    pc_transcripts = pc_gtf.transcript_name.unique()
+    
+    if not ax:
+        fig, ax = plt.subplots(figsize=(15, 1))
+        ax.set_ylim(-6.5, 2.1)
+    
+    position = 0
+    
+    for transcript, transcript_gtf in pc_gtf.groupby('transcript_name'):
+        PlotTranscript(transcript_gtf, position = position, ax=ax, cds=plot_cds)
+        
+        if not collapse_transcripts:
+            if plot_cds:
+                position -= 2.5
+            else:
+                position -= 1.5
+                
+    if plot_nmd:
+        if collapse_transcripts:
+            color = 'navy'
+        else:
+            color = 'darkorange'
+            
+        for transcript, transcript_gtf in nmd_gtf.groupby('transcript_name'):
+            PlotTranscript(transcript_gtf, position = position, ax=ax, cds=False, color=color)
+
+            if not collapse_transcripts:
+                if plot_cds:
+                    position -= 2.5
+                else:
+                    position -= 1.5
+                
+    
+
+    ax.spines['left'].set_visible(False)
+    ax.spines['bottom'].set_linewidth(1)
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+    
+    ticks_loc = ax.get_xticks().tolist()
+    label_format = '{:,}'
+
+    ax.set_xticks(ticks_loc)
+    ax.set_xticklabels([label_format.format(int(x)) for x in ticks_loc])
+    
+    chrom = list(gene_gtf.seqname)[0]
+    
+    ax.set_xlabel(chrom + ' coordinates')
+    ax.set_yticks([])
+        

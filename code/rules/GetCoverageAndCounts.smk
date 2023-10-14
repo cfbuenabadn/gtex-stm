@@ -40,25 +40,67 @@ rule GetBedsAndTabix:
         (tabix -p bed {output.bed}) &>> {log}
         """
 
+def get_bed_per_tissue(wildcards):
+    bed_samples = []
+    for tissue in tissue_list:
+        tissue_samples = gtex_samples.loc[gtex_samples.tissue_id == tissue].index
+        file_name = "coverage/bed/" + tissue + "/{IndID}.bed.gz"
+        bed_samples.extend(expand(file_name, IndID=tissue_samples))
+    return bed_samples
+    
+def get_tbi_per_tissue(wildcards):
+    tbi_samples = []
+    for tissue in tissue_list:
+        tissue_samples = gtex_samples.loc[gtex_samples.tissue_id == tissue].index
+        file_name = "coverage/bed/" + tissue + "/{IndID}.bed.gz.tbi"
+        tbi_samples.extend(expand(file_name, IndID=tissue_samples))
+    return tbi_samples
 
-rule featureCounts:
+#tissue_samples = gtex_samples.loc[gtex_samples.tissue_id == wildcards.Tissue].index
+#tbi_samples = expand("coverage/bed/{{Tissue}}/{IndID}.bed.gz.tbi", IndID=tissue_samples)
+#return tbi_samples
+    
+def get_gene_coords(wildcards):
+    gene_bed = selected_genes.loc[selected_genes.gene==wildcards.gene]
+    gene_chrom = gene_bed.chrom
+    gene_start = str(int(gene_bed.start) - 50)
+    gene_end = str(int(gene_bed.end) + 50)
+    coords = ' '.join([gene_chrom, gene_start, gene_end])
+    return coords
+
+rule MakeGeneCounts:
     input:
-        bam = GetTissueBAM,
-        bai = GetTissueBai,
-        annotations = "Annotations/gencode.v34.primary_assembly.annotation.gtf"
+        get_bed_per_tissue,
+        get_tbi_per_tissue
     output:
-        "featureCounts/{Tissue}/Counts.txt"
-    threads:
-        2
-    wildcard_constraints:
-        Tissue = "|".join(tissue_list)
+        temp(expand("coverage/counts/{Tissue}/{{gene}}.csv.gz", Tissue=tissue_list))
     resources:
-        mem = 42000,
-        cpus_per_node = 2,
+        mem_mb = 24000,
     log:
-        "logs/featureCounts/{Tissue}.log"
+        "logs/counts/tissues.{gene}.log"
+    wildcard_constraints:
+        gene = '|'.join(selected_genes.gene),
+        #Tissue = '|'.join(tissue_list)
+    params:
+        tissues = ' '.join(tissue_list)
     shell:
         """
-        featureCounts -p -T {threads} --ignoreDup --primary -a {input.annotations} -o {output} {input.bam} &> {log}
+        python scripts/prepare_counts.py {wildcards.gene} {params.tissues} &> {log}
         """
 
+rule MakeCountTables:
+    input:
+        expand("coverage/counts/{Tissue}/{{gene}}.csv.gz", Tissue = tissue_list)
+    output:
+        "coverage/count_tables/{gene}.tab.gz"
+    log:
+        'logs/make_counts/{gene}.log'
+    resources:
+        mem_mb = 24000,
+    shell:
+        """
+        {config[Rscript]} scripts/prepare_counts_table.R {wildcards.gene} {output} &> {log}
+        """
+    
+    
+        
