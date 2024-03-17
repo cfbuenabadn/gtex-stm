@@ -5,20 +5,20 @@ def much_more_mem_after_first_attempt(wildcards, attempt):
         return 62000
 
 
-rule GetBigWigs:
-    input:
-        bam = "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{Tissue}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
-        bai = "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{Tissue}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.bai"
-    output:
-        "coverage/bigwigs/{Tissue}/{IndID}.bw"
-    resources:
-        mem_mb = 42000,
-    log:
-        "logs/bigwigs/{Tissue}.{IndID}.log"
-    shell:
-        """
-        (bamCoverage -b {input.bam} -o {output}) &> {log}
-        """
+#rule GetBigWigs:
+#    input:
+#        bam = "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{Tissue}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
+#        bai = "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-#download/{Tissue}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.bai"
+#    output:
+#        "coverage/bigwigs/{Tissue}/{IndID}.bw"
+#    resources:
+#        mem_mb = 42000,
+#    log:
+#        "logs/bigwigs/{Tissue}.{IndID}.log"
+#    shell:
+#        """
+#        (bamCoverage -b {input.bam} -o {output}) &> {log}
+#        """
 
 
 rule GetBedsAndTabix:
@@ -73,11 +73,12 @@ rule MakeGeneCounts:
         get_bed_per_tissue,
         get_tbi_per_tissue
     output:
-        temp(expand("coverage/counts/{Tissue}/{{gene}}.csv.gz", Tissue=tissue_list))
+        temp("coverage/counts_total/{gene}.csv.gz")
+        #temp(expand("coverage/counts/{Tissue}/{{gene}}.csv.gz", Tissue=tissue_list))
     resources:
         mem_mb = 24000,
     log:
-        "logs/counts/tissues.{gene}.log"
+        "/scratch/midway3/cnajar/logs/counts/tissues.{gene}.log"
     wildcard_constraints:
         gene = '|'.join(selected_genes.gene),
         #Tissue = '|'.join(tissue_list)
@@ -88,18 +89,21 @@ rule MakeGeneCounts:
         python scripts/prepare_counts.py {wildcards.gene} {params.tissues} &> {log}
         """
 
-rule MakeCountTables:
+rule FilterCountTables:
     input:
-        expand("coverage/counts/{Tissue}/{{gene}}.csv.gz", Tissue = tissue_list)
+        "coverage/counts_total/{gene}.csv.gz"
+        #expand("coverage/counts/{Tissue}/{{gene}}.csv.gz", Tissue = tissue_list)
     output:
-        "coverage/count_tables/{gene}.tab.gz"
+        "coverage/counts_filtered/{gene}.csv.gz",
+        "coverage/counts_filtered_stats/{gene}.stats"
+        #"coverage/count_tables/{gene}.tab.gz"
     log:
-        'logs/make_counts/{gene}.log'
+        '/scratch/midway3/cnajar/logs/make_counts/{gene}.log'
     resources:
-        mem_mb = 24000,
+        mem_mb = 68000,
     shell:
         """
-        {config[Rscript]} scripts/prepare_counts_table.R {wildcards.gene} {output} &> {log}
+        python scripts/filter_counts.py {wildcards.gene} &> {log}
         """
     
     

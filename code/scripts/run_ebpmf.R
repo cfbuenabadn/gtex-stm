@@ -9,25 +9,17 @@ library(fastTopics)
 library(FNN)
 library(robustbase)
 library(smashr)
-library(ebpmf)
+library(ebpmf.alpha)
 library(Matrix)
-
-source('/project2/mstephens/cfbuenabadn/gtex-stm/code/scripts/sgom.R')
 
 args = commandArgs(trailingOnly=TRUE)
 gene_name = args[1]
-K = as.integer(args[2])
 log_counts = as.logical(args[3])
 out_rds = args[4]
 out_EF = args[5]
 out_EF_smooth = args[6]
 out_EL = args[7]
 out_EL_test = args[8]
-
-sgom_out_EF = args[9]
-sgom_out_EF_smooth = args[10]
-sgom_out_EL = args[11]
-sgom_out_EL_test = args[12]
 
 tissues <- c('Brain_Anterior_cingulate_cortex_BA24', 
              'Brain_Cortex', 
@@ -44,10 +36,6 @@ tissues <- c('Brain_Anterior_cingulate_cortex_BA24',
 counts <- paste0("coverage/count_tables/", gene_name, ".tab.gz") %>%
     read_tsv() %>%
     column_to_rownames(var = "Sample_ID") 
-
-    
-    
-
 
 
 test_samples <- character(0)
@@ -68,9 +56,6 @@ for (element in row.names(counts)) {
 }
 
      
-     
-
-
 row.names(counts) <- counts %>% row.names() %>% sub("\\..*", "", .)
 
 ##########################################################################
@@ -94,21 +79,15 @@ colnames(counts) <- matrix_cols
 
 train_model <- function(counts, K, init='fasttopics'){
     
-    if (init == 'sgom'){
-        fit_sgom_nugget = cluster.mix(counts,K=K,tol=1e-3,maxit = 100,nugget=TRUE)
-        init <- list(F_init=t(fit_sgom_nugget$phi), L_init=fit_sgom_nugget$pi)
-
-    }
+    #if (init == 'sgom'){
+    #    fit_sgom_nugget = cluster.mix(counts,K=K,tol=1e-3,maxit = 100,nugget=TRUE)
+    #    init <- list(F_init=t(fit_sgom_nugget$phi), L_init=fit_sgom_nugget$pi)}
     fit_ebpmf = ebpmf_identity(counts,K=K,tol = 1e-3,maxiter = 100, init = init)
     return(fit_ebpmf)
 }
      
 
 fit_ebpmf <- train_model(counts[train_samples,], K)
-fit_ebpmf_sgom <- train_model(counts[train_samples,], K, 'sgom')
-
-# log_fit_ebpmf <- train_model(logCounts[train_samples,], K)
-# log_fit_ebpmf_sgom <- train_model(logCounts[train_samples,], K, 'sgom')
 
 ############################
  
@@ -195,7 +174,6 @@ factor_names <- colnames(EL_test)
 EL_test['Sample_ID'] <- EL_test %>% row.names()
 EL_test <- EL_test[,c('Sample_ID', factor_names)]
 EL_test %>% as.data.frame() %>% write_tsv(out_EL_test)
-     
      
 
      

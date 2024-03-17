@@ -200,7 +200,6 @@ use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Brain_Cerebellar_Hemi
 
 
 
-
 rule BamIndex:
     input:
         "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{Tissue}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam"
@@ -208,19 +207,58 @@ rule BamIndex:
         "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{Tissue}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.bai"
     log:
         "logs/indexbam/{Tissue}.{IndID}.log"
+    resources:
+        mem_mb = 24000
     shell:
         """
-        samtools index {input} > {log}
+        samtools index {input} {output} > {log}
         """
 
-rule GetIndex:
+#rule GetIndex:
+#    input:
+#        bam = "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/bams/{SampleSet}/{IndID}.Aligned.sortedByCoord.out.patched.md.bam"
+#    output:
+#        bai = "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-#download/bams/{SampleSet}/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.bai"
+#    log:
+#        "logs/bam_idx.{SampleSet}.{IndID}.log"
+#    shell:
+#        """
+#        samtools index {input.bam} {output.bai} &> {log}
+#        """
+
+rule DownloadFromGTEx_TestSamples:
     input:
-        bam = "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/bams/{SampleSet}/{IndID}.Aligned.sortedByCoord.out.patched.md.bam"
+        manifest = "manifests/test-manifest.json",
     output:
-        bai = "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/bams/{SampleSet}/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.bai"
+        expand(
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/TestSamples/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
+        IndID = test_samples
+        )
     log:
-        "logs/bam_idx.{SampleSet}.{IndID}.log"
+        'logs/download_test.log' 
+    resources:
+        mem_mb = 42000
     shell:
         """
-        samtools index {input.bam} {output.bai} &> {log}
+        (./gen3-client download-multiple --profile=AnVIL --manifest={input.manifest} --download-path=/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/TestSamples/bams/ --protocol=s3) &> {log}
         """
+        
+rule DownloadFromGTEx_TestSamples_juncs:
+    input:
+        manifest = "manifests/test-manifest-juncs.json",
+    output:
+        expand(
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/TestSamples/juncs/{IndID}.leafcutter.junc.gz",
+        IndID = test_samples
+        )
+    log:
+        'logs/download_test.log' 
+    resources:
+        mem_mb = 42000
+    shell:
+        """
+        (./gen3-client download-multiple --profile=AnVIL --manifest={input.manifest} --download-path=/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/TestSamples/juncs/ --protocol=s3) &> {log}
+        """
+        
+        
+        

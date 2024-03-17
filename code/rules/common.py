@@ -2,6 +2,19 @@ import pandas as pd
 import numpy as np
 import os
 
+def more_mem_after_first_attempt(wildcards, attempt):
+    if int(attempt) == 1:
+        return 12000
+    else:
+        return 24000
+
+test_list = ['Brain_Frontal_Cortex_BA9_v_Muscle_Skeletal',
+             'Brain_Frontal_Cortex_BA9_v_Brain_Putamen_basal_ganglia',
+             'Liver_v_Whole_Blood',
+             'Lung_v_Skin_Not_Sun_Exposed_Suprapubic',
+             'BA9_1_v_BA9_2'
+             ]
+    
 prueba_genes = ['ENSG00000172009', 'ENSG00000112081', 'ENSG00000067225', 'ENSG00000132879']
 
 top_genes = ['ENSG00000196531', 'ENSG00000196535', 'ENSG00000166925',
@@ -27,6 +40,11 @@ with open('config/genes.txt', 'r') as fh:
     for line in fh:
         genes_test.append(line.rstrip())
         
+test_samples = list()
+with open('../data/test_samples_selected.txt', 'r') as fh:
+    for x in fh:
+        test_samples.append(x.rstrip())
+
 
 genes_negatives = []
 with open('config/genes.Brain_Cortex_v_Muscle_Sleketal.negatives.txt', 'r') as fh:
@@ -190,8 +208,14 @@ tissue_list = ['Brain_Anterior_cingulate_cortex_BA24',
 'Muscle_Skeletal',  
 'Whole_Blood']
 
-selected_genes = pd.read_csv('../data/selected_genes.bed', sep='\t', 
+selected_genes = pd.read_csv('../data/protein_coding_genes.bed.gz', sep='\t', #'../data/selected_genes.bed', sep='\t', 
                              names = ['chrom', 'start', 'end', 'gene', 'gene_symbol', 'strand'])
+
+
+genes_filtered = [x.rstrip() for x in open('../data/genes_filtered.txt', 'r').readlines()]
+
+gregor_samples = pd.read_csv('config/gregor_samples_sberg.tsv', sep='\t', index_col=0)
+gregor_samples = list(gregor_samples.index)
     
 # import json
 

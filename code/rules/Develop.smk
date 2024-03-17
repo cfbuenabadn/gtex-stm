@@ -108,6 +108,31 @@ rule CollectCountsCoverage:
 rule run_ebpmf_test:
     input:
         #expand('ebpmf_models/RDS/{gene}.K{k}.ebpmf.rds', gene = list(selected_genes.gene), k = ['3', '5'])
-        expand('ebpmf_models/RDS/{gene}.K{K}.ebpmf.rds', gene = (prueba_genes + list(selected_genes.gene)), K=['3', '4', '5'])
+        expand('ebpmf_models/RDS/{gene}.K{K}.ebpmf.rds', gene = (prueba_genes + list(selected_genes.gene)), K=['3', '4', '5', '10']),
+        expand('ebpmf_models/RDS_{subset}/{gene}.K{K}.ebpmf.rds', 
+        gene = (prueba_genes + list(selected_genes.gene)), K=['3', '4', '5', '10'], subset=['no_brain'])
+        
+rule run_ebpmf_test_brain:
+    input:
+        expand('ebpmf_models/RDS_brain/{gene}.K{K}.ebpmf.rds', 
+        gene = (prueba_genes + list(selected_genes.gene)), K=['3', '4', '5', '10'])
         
 
+rule get_counts_test:
+    input:
+        expand('coverage/counts/{tissue}/ENSG00000211445.csv.gz', tissue = tissue_list)
+        
+rule download_tests:
+    input:
+        expand(
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/TestSamples/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
+        IndID = test_samples
+        )
+
+rule download_tests_juncs:
+    input:
+        expand(
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/TestSamples/juncs/{IndID}.leafcutter.junc.gz",
+        IndID = test_samples
+        )
+        

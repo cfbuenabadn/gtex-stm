@@ -8,8 +8,11 @@ include: "rules/Develop.smk"
 #include: "rules/ExpressionAnalysis.smk"
 #include: "rules/RunTests.smk"
 include: "rules/DifferentialSplicing.smk"
-include: "rules/develop_ebpmf.smk"
+include: "rules/ebpmf.smk"
 include: "rules/GetCoverageAndCounts.smk"
+include: "rules/RunRMATS.smk"
+include: "rules/RunSleuth.smk"
+include: "rules/ProcessGREGoR.smk"
 
 localrules:
     all,
@@ -20,7 +23,9 @@ localrules:
     DownloadFromGTEx_Brain_Hippocampus,
     DownloadFromGTEx_Brain_Hypothalamus,
     DownloadHg38Ref,
-    DownloadHg38Basic,
+    DownloadFromGTEx_TestSamples,
+    DownloadFromGTEx_TestSamples_juncs,
+    DownloadTranscriptome
 
 
 rule all:
@@ -44,21 +49,10 @@ rule all:
 
         
         
-rule tests:
+rule test_ebpmf_alpha:
     input:
-        expand("Tests/PKM/stm_models/SubsetRegion.sgom_K{knum}.rds", knum=[2, 3, 5, 10]),
-        expand("Tests/PKM/stm_models/SubsetRegion_train.sgom_K{knum}.rds", knum=[2, 3, 5, 10]),
-        expand("Tests/PKM/stm_models/SubsetTissues.sgom_K{knum}.rds", knum=[2, 3, 5, 10]),
-        expand("Tests/PKM/stm_models/SubsetTissues_train.sgom_K{knum}.rds", knum=[2, 3, 5, 10]),
-        expand("Tests/PKM/stm_models/SubsetTissues_plus_one.sgom_K{knum}.rds", knum=[2, 3, 5, 10]),
-        expand("Tests/PKM/stm_models/SubsetTissues_train_plus_one.sgom_K{knum}.rds", knum=[2, 3, 5, 10]),
-        expand("Tests/{gene}/stm_models/Training.sgom_K{knum}.rds", gene = ["PKM", "TPM3", "SRSF3"], knum=[2, 3, 5, 10])
-
-
-#rule KL_test:
-#    input:
-#        expand("ebpmf_model/train_2tissues_scores/Brain_Cortex.Muscle_Skeletal-{gene}.K2.ebpmf.rds", gene=genes)
-
+        expand("coverage/counts_filtered/{gene}.csv.gz", gene = prueba_genes + list(selected_genes.gene)),
+        
 
 # awk '$20 <= 0.1 && $23>=0.1 ' DifferentialSplicing/rMATS/Brain_Cortex_v_Muscle_Skeletal_train/output/SE.MATS.JCEC.txt | awk -F'"' '{print $4}' - | sort -u | grep -v '.1' - > config/genes.Brain_Cortex_v_Muscle_Sleketal.all_positives.txt
 

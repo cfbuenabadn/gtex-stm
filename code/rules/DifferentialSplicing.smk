@@ -1,408 +1,179 @@
-#### Note: run these after loading Midway's R4.1.0 by running module load R/4.1.0
+#rule UnzipJuncs:
+#    input:
+#        expand(
+#            "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/TestSamples/juncs/{IndID}.leafcutter.junc.gz",
+#            IndID = test_samples
+#            )
+#    output:
+#        expand(
+#            "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/TestSamples/juncs/{IndID}.leafcutter.junc",
+#            IndID = test_samples
+#            )
+#    shell:
+#        """
+#        gunzip /project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/TestSamples/juncs/*
+#        """
 
-#def GetSetBAM(wildcards):
-#    if wildcards.Test == 'female_test':
-#        IndID_list = get_all_samples(wildcards.Tissue, True)[0]
-#    elif wildcards.Test == 'train':
-#        IndID_list = get_all_samples(wildcards.Tissue, True)[1]
-#    elif wildcards.Test == 'test':
-#        IndID_list = get_all_samples(wildcards.Tissue, True)[2]
-#        
-#    x = expand(
-#        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam", 
-#        IndID = IndID_list
-#        )
-#    
-#    return x
-    
-#def GetSetJunc(wildcards):
-#    if wildcards.Test == 'ThreeSamplesFemale':
-#        IndID_list = get_all_samples(wildcards.Tissue, True)[0]
-#    elif wildcards.Test == 'Train':
-#        IndID_list = get_all_samples(wildcards.Tissue, True)[1]
-#    elif wildcards.Test == 'Test':
-#        IndID_list = get_all_samples(wildcards.Tissue, True)[2]
-#        
-#    x = expand(
-#        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.junc", 
-#        IndID = IndID_list
-#        )
-#    
-#    return x
-    
-
-    
-#def GetCondition1(wildcards):
-#    if wildcards.Test == 'TrainTest_2tissues':
-#        x = '.'.join(brain_train)
-#    elif wildcards.Test == 'ThreeSamplesFemale':
-#        x = '.'.join(brain_female_three_samples_only)
-#    elif wildcards.Test == 'ThreeSamplesMale':
-#        x = '.'.join(brain_male_three_samples_only)
-#    return x
-    
-#def GetCondition2(wildcards):
-#    if wildcards.Test == 'TrainTest_2tissues':
-#        x = '.'.join(muscle_train)
-#    elif wildcards.Test == 'ThreeSamplesFemale':
-#        x = '.'.join(muscle_female_three_samples_only)
-#    elif wildcards.Test == 'ThreeSamplesMale':
-#        x = '.'.join(muscle_male_three_samples_only)
-#    return x
-    
-
-#def GetTissueTestList(wildcards):
-#    tissue_samples_tuple = get_all_samples(wildcards.Tissue, True)
-#        
-#    if wildcards.Test == 'female_test':
-#        tissue_samples = tissue_samples_tuple[0]
-#    elif wildcards.Test == 'train':
-#        tissue_samples = tissue_samples_tuple[1]
-#    elif wildcards.Test == 'test':
-#        tissue_samples = tissue_samples_tuple[2]
-#        
-#    tissue_samples = '.'.join(tissue_samples)
-    
-
-
-rule MakeBfiles:
+rule MakeJuncsFromBam:
     input:
-        GetTissueGroupBAM
+        bam = "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/TestSamples/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
+        bai = "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/TestSamples/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.bai"
     output:
-        "gtex-download/{Tissue}/files/rmats_{Group}.b.txt",
-    params:
-        tissue_list = GetTissueGroupListStr
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/TestSamples/juncs/{IndID}.leafcutter.junc",
     log:
-        "logs/differential_splicing/{Group}.{Tissue}.log"
-    wildcard_constraints:
-        Group = 'male_test|male_test2|female_test|female_test2|test|train',
-        Tissue = '|'.join(tissue_list)
-    resources:
-        mem_mb = 4000
-    shell:
-        """
-        python scripts/make_rmats_input_files.py --group {wildcards.Group} --tissue {wildcards.Tissue} --tissue_list {params.tissue_list} --output {output} &> {log}
-        """
-
-rule RunRMATS:
-    input:
-        b1 = "gtex-download/{Tissue_1}/files/rmats_{Group}.b.txt",
-        b2 = "gtex-download/{Tissue_2}/files/rmats_{Group}.b.txt",
-        gtf = "Annotations/gencode.v34.primary_assembly.annotation.gtf" #"Annotations/gencode.v43.basic.annotation.gtf"
-    output:
-        expand('DifferentialSplicing/rMATS/{{Tissue_1}}_v_{{Tissue_2}}_{{Group}}/output/{output_file}', output_file = rsem_output_list),
-        #temp(directory('/scratch/midway2/cnajar/rmats/{Tissue_1}_v_{Tissue_2}_{Group}'))
-    log:
-        'logs/differential_splicing/{Tissue_1}_v_{Tissue_2}_{Group}.rmats_run.log',
-    wildcard_constraints:
-        Group = 'male_test|male_test2|female_test|female_test2|test|train',
-        Tissue_1 = '|'.join(tissue_list),
-        Tissue_2 = '|'.join(tissue_list)
-    resources:
-        mem_mb = 48000
-    conda:
-        "../envs/rmats.yml"
-    shell:
-        """
-        python  {config[rMATS]} --b1 {input.b1} --b2 {input.b2} --gtf {input.gtf} -t single --readLength 76 --nthread 8 --od DifferentialSplicing/rMATS/{wildcards.Tissue_1}_v_{wildcards.Tissue_2}_{wildcards.Group}/output/ --tmp /scratch/midway2/cnajar/rmats/{wildcards.Tissue_1}_v_{wildcards.Tissue_2}_{wildcards.Group} &> {log}
-        """
-
-rule RunRMATS_negatives:
-    input:
-        b1 = "gtex-download/{Tissue}/files/rmats_{Sex}_test.b.txt",
-        b2 = "gtex-download/{Tissue}/files/rmats_{Sex}_test2.b.txt",
-        gtf = "Annotations/gencode.v34.primary_assembly.annotation.gtf"
-    output:
-        expand('DifferentialSplicing/rMATS/negative_tests/{{Tissue}}_{{Sex}}_test/output/{output_file}', output_file = rsem_output_list),
-    log:
-        'logs/differential_splicing/{Tissue}_{Sex}_test.rmats_run.log'
-    wildcard_constraints:
-        Tissue = '|'.join(tissue_list),
-        Sex = 'female|male'
-    resources:
-        mem_mb = 24000
-    conda:
-        '../envs/rmats.yml'
-    shell:
-        """
-        python  {config[rMATS]} --b1 {input.b1} --b2 {input.b2} --gtf {input.gtf} -t single --readLength 76 --nthread 8 --od DifferentialSplicing/rMATS/negative_tests/{wildcards.Tissue}_{wildcards.Sex}_test/output/ --tmp /scratch/midway2/cnajar/rmats/{wildcards.Tissue}_{wildcards.Sex}_test &> {log}
-        """
-
-
-
-rule MakeJuncFiles_Brain_Cortex:
-    input:
-        GetTissueBAM
-    output:
-        expand(
-        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.junc", 
-        IndID = brain_cortex_samples
-        ) 
-    log:
-        "logs/leafcutter/input/{Tissue}.juncfiles.log"
+         "logs/leafcutter/input/{IndID}.juncfiles.log"
     resources:
         mem_mb = 24000
     wildcard_constraints:
-        Tissue = 'Brain_Cortex'
+        IndID = '|'.join(test_samples)
     shell:
         """
         echo 'Transforming bam to junc' > {log}
-        for bamfile in $(ls gtex-download/{wildcards.Tissue}/bams/*.Aligned.sortedByCoord.out.patched.md.bam); do
-            (echo Converting $bamfile to $bamfile.junc) &>> {log}
-            (samtools index $bamfile) &>> {log}
-            (regtools junctions extract -s XS -a 8 -m 50 -M 500000 $bamfile -o $bamfile.junc) &>> {log}
-        done;
+        (echo Converting {input.bam} to {output}) &>> {log}
+        (regtools junctions extract -s XS -a 8 -m 50 -M 500000 {input.bam} -o {output}) &>> {log}
         """
-        
-    
-use rule MakeJuncFiles_Brain_Cortex as MakeJuncFiles_Muscle_Skeletal with:
-    output:
-        expand(
-        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.junc", 
-        IndID = muscle_skeletal_samples
-        ) 
-    wildcard_constraints:
-        Tissue = 'Muscle_Skeletal'  
-        
-        
-use rule MakeJuncFiles_Brain_Cortex as MakeJuncFiles_Whole_Blood with:
-    output:
-        expand(
-        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.junc", 
-        IndID = whole_blood_samples
-        ) 
-    wildcard_constraints:
-        Tissue = 'Whole_Blood'  
-        
-use rule MakeJuncFiles_Brain_Cortex as MakeJuncFiles_Liver with:
-    output:
-        expand(
-        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.junc", 
-        IndID = liver_samples
-        ) 
-    wildcard_constraints:
-        Tissue = 'Liver'  
-       
-use rule MakeJuncFiles_Brain_Cortex as MakeJuncFiles_Brain_Hippocampus with:
-    output:
-        expand(
-        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.junc",
-        IndID = brain_hippocampus_samples
-        )
-    wildcard_constraints:
-        Tissue = 'Brain_Hippocampus' 
-        
-use rule MakeJuncFiles_Brain_Cortex as MakeJuncFiles_Brain_Hypothalamus with:
-    output:
-        expand(
-        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.junc",
-        IndID = brain_hypothalamus_samples
-        )
-    wildcard_constraints:
-        Tissue = 'Brain_Hypothalamus' 
-        
-use rule MakeJuncFiles_Brain_Cortex as MakeJuncFiles_Brain_Cerebellum with:
-    output:
-        expand(
-        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.junc",
-        IndID = brain_cerebellum_samples
-        )
-    wildcard_constraints:
-        Tissue = 'Brain_Cerebellum' 
-        
-use rule MakeJuncFiles_Brain_Cortex as MakeJuncFiles_Skin_Not_Sun_Exposed_Suprapubic with:
-    output:
-        expand(
-        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.junc",
-        IndID = skin_not_sun_exposed_suprapubic_samples
-        )
-    wildcard_constraints:
-        Tissue = 'Skin_Not_Sun_Exposed_Suprapubic' 
-        
-use rule MakeJuncFiles_Brain_Cortex as MakeJuncFiles_Cells_Cultured_fibroblasts with:
-    output:
-        expand(
-        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.junc",
-        IndID = fibroblast_samples
-        )
-    wildcard_constraints:
-        Tissue = 'Cells_Cultured_fibroblasts' 
-        
-use rule MakeJuncFiles_Brain_Cortex as MakeJuncFiles_LCLs with:
-    output:
-        expand(
-        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.junc",
-        IndID = LCL_samples
-        )
-    wildcard_constraints:
-        Tissue = 'Cells_EBV-transformed_lymphocytes' 
-        
-use rule MakeJuncFiles_Brain_Cortex as MakeJuncFiles_Brain_Frontal_Cortex_BA9 with:
-    output:
-        expand(
-        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.junc",
-        IndID = BA9_samples
-        )
-    wildcard_constraints:
-        Tissue = 'Brain_Frontal_Cortex_BA9'
-        
-use rule MakeJuncFiles_Brain_Cortex as MakeJuncFiles_Brain_Anterior_cingulate_cortex_BA24 with:
-    output:
-        expand(
-        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.junc",
-        IndID = BA24_samples
-        )
-    wildcard_constraints:
-        Tissue = 'Brain_Anterior_cingulate_cortex_BA24'
-        
-use rule MakeJuncFiles_Brain_Cortex as MakeJuncFiles_Brain_Putamen_basal_ganglia with:
-    output:
-        expand(
-        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.junc",
-        IndID = putamen_samples
-        )
-    wildcard_constraints:
-        Tissue = 'Brain_Putamen_basal_ganglia'  
-        
-use rule MakeJuncFiles_Brain_Cortex as MakeJuncFiles_Brain_Caudate_basal_ganglia with:
-    output:
-        expand(
-        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.junc",
-        IndID = caudate_samples
-        )
-    wildcard_constraints:
-        Tissue = 'Brain_Caudate_basal_ganglia'
-        
-        
-use rule MakeJuncFiles_Brain_Cortex as MakeJuncFiles_Brain_Cerebellar_Hemisphere with:
-    output:
-        expand(
-        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.junc",
-        IndID = cerebellarh_samples
-        )
-    wildcard_constraints:
-        Tissue = 'Brain_Cerebellar_Hemisphere'        
-        
-use rule MakeJuncFiles_Brain_Cortex as MakeJuncFiles_Heart_Atrial_Appendage with:
-    output:
-        expand(
-        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.junc",
-        IndID = heart_atrial_appendage_samples
-        )
-    wildcard_constraints:
-        Tissue = 'Heart_Atrial_Appendage'    
 
-
-use rule MakeJuncFiles_Brain_Cortex as MakeJuncFiles_Lung with:
-    output:
-        expand(
-        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.junc",
-        IndID = lung_samples
-        )
-    wildcard_constraints:
-        Tissue = 'Lung' 
-        
-rule MakeLeafcutterInputJuncFiles:
+rule MakeLeafCutterInput:
     input:
-        Tissue_1_Junc = GetTissueJunc,
-        Tissue_2_Junc =GetTissueJunc2
-        #Tissue_1_Junc = GetTissueGroupJunc,
-        #Tissue_2_Junc =GetTissueGroupJunc2
+        expand(
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/TestSamples/juncs/{IndID}.leafcutter.junc",
+        IndID = test_samples
+        )
     output:
-        'DifferentialSplicing/leafcutter/juncfiles/{Tissue}_v_{Tissue_2}/test_juncfiles.txt',
+        expand('DifferentialSplicing/leafcutter/DS_tests/{tissue_test}_{n}Samples/input/test_juncfiles.txt',
+        tissue_test = test_list, n = ['3', '5']),
+        expand('DifferentialSplicing/leafcutter/DS_tests/{tissue_test}_{n}Samples/input/groups_file.txt', 
+        tissue_test = test_list, n = ['3', '5'])
     log:
-        "logs/leafcutter/input/{Tissue}_v_{Tissue_2}.test_juncfiles.log"
-    wildcard_constraints:
-        Tissue = '|'.join(tissue_list),
-        Tissue_2 = '|'.join(tissue_list)
+        "logs/leafcutter/make_inputs.log"
     shell:
         """
-        echo 'Creating test_juncfiles.txt' > {log}
-        for bamfile in {input.Tissue_1_Junc}; do
-            (echo $bamfile >> {output}) &>> {log}
-        done;
-        for bamfile in {input.Tissue_2_Junc}; do
-            (echo $bamfile >> {output}) &>> {log}
-        done;
+        python scripts/make_leafcutter_input_files.py &> {log}
         """
 
-rule MakeLeafcutterInputGroupsFile:
-    input:
-        'DifferentialSplicing/leafcutter/juncfiles/{Tissue}_v_{Tissue_2}/test_juncfiles.txt'
-    output:
-        groups_file = 'DifferentialSplicing/leafcutter/{Tissue}_v_{Tissue_2}_{Group}/input/groups_file.txt'
-    log:
-        "logs/leafcutter/input/{Tissue}_v_{Tissue_2}_{Group}.groups_file.log"
-    params:
-        tissue1_list = GetTissueGroupListStr,
-        tissue2_list = GetTissueGroupListStr2
-    wildcard_constraints:
-        Group = 'male_test|male_test2|female_test|female_test2|test|train',
-        Tissue = '|'.join(tissue_list),
-        Tissue_2 = '|'.join(tissue_list)
-    shell:
-        """
-        python scripts/make_leafcutter_input_files.py --group {wildcards.Group} --tissue1 {wildcards.Tissue} --tissue2 {wildcards.Tissue_2} --tissue1_list {params.tissue1_list} --tissue2_list {params.tissue2_list} --output {output} &> {log}
-        """
+def LeafcutterDS_params(wildcards):
+    if wildcards.n == '3':
+        return "-i 2 -g 2"
+    elif wildcards.tissue_test == 'BA9_1_v_BA9_2':
+        return "-i 3 -g 3"
+    else:
+        return ""
 
 rule LeafcutterCluster:
     input:
-        'DifferentialSplicing/leafcutter/juncfiles/{Tissue}_v_{Tissue_2}/test_juncfiles.txt'
+        'DifferentialSplicing/leafcutter/DS_tests/{tissue_test}_{n}Samples/input/test_juncfiles.txt'
     output:
-        'DifferentialSplicing/leafcutter/juncfiles/{Tissue}_v_{Tissue_2}/leafcutter_perind_numers.counts.gz'
+        'DifferentialSplicing/leafcutter/DS_tests/{tissue_test}_{n}Samples/input/leafcutter_perind_numers.counts.gz'
     log:
-        "logs/leafcutter/run/{Tissue}_v_{Tissue_2}.cluster.log"
-    wildcard_constraints:
-        Tissue = '|'.join(tissue_list),
-        Tissue_2 = '|'.join(tissue_list)
+        "logs/leafcutter/run/cluster.{tissue_test}_{n}Samples.log"
     resources:
         mem_mb = 24000
+    wildcard_constraints:
+        tissue_test = '|'.join(test_list),
+        n = '3|5'
     shell:
         """
-        python scripts/davidaknowles_leafcutter/scripts/leafcutter_cluster_regtools_py3.py -j {input} -m 50 -o DifferentialSplicing/leafcutter/juncfiles/{wildcards.Tissue}_v_{wildcards.Tissue_2}/leafcutter -l 500000 &> {log}
+        python scripts/davidaknowles_leafcutter/scripts/leafcutter_cluster_regtools_py3.py -j {input} -m 50 -o DifferentialSplicing/leafcutter/DS_tests/{wildcards.tissue_test}_{wildcards.n}Samples/input/leafcutter -l 500000 &> {log}
         """
         
 rule AnnotateClusters:
     input:
         gtf = 'scripts/davidaknowles_leafcutter/leafcutter/data/gencode.v31.exons.txt.gz',
-        clusters = 'DifferentialSplicing/leafcutter/juncfiles/{Tissue}_v_{Tissue_2}/leafcutter_perind_numers.counts.gz',
+        clusters = 'DifferentialSplicing/leafcutter/DS_tests/{tissue_test}_{n}Samples/input/leafcutter_perind_numers.counts.gz',
     output:
-        'DifferentialSplicing/leafcutter/juncfiles/{Tissue}_v_{Tissue_2}/cluster_annotation.tab.gz'
+        'DifferentialSplicing/leafcutter/DS_tests/{tissue_test}_{n}Samples/input/cluster_annotation.tab.gz'
     log:
-        'logs/leafcutter/annotate_clusters_{Tissue}_v_{Tissue_2}.log'
+        'logs/leafcutter/annotate_clusters.{tissue_test}_{n}Samples.log'
+    wildcard_constraints:
+        tissue_test = '|'.join(test_list),
+        n = '3|5'
     shell:
         """
         python scripts/annotate_clusters.py --gtf {input.gtf} --clusters {input.clusters} --output {output} &> {log}
         """
         
+rule MakeExonAnnotationForLeafcutter:
+    input:
+        "Annotations/gencode.v44.primary_assembly.annotation.gtf"
+    output:
+        "Annotations/gencode44_exons.txt.gz"
+    log:
+        "logs/leafcutter/exon_annotation.log"
+    shell:
+        """
+        (echo "chr start end strand gene_name" > Annotations/gencode44_exons.txt) &> {log};
+        (awk '$3=="exon" {{print $1, $4, $5, $7, $10}}' {input} - | awk -F'["\.]' '{{print $1, $2}}' - >> Annotations/gencode44_exons.txt) &> {log}
+        (gzip Annotations/gencode44_exons.txt) &> {log}
+        """
         
 rule LeafcutterDS:
     input:
-        perind_counts = 'DifferentialSplicing/leafcutter/juncfiles/{Tissue}_v_{Tissue_2}/leafcutter_perind_numers.counts.gz',
-        groups_file = 'DifferentialSplicing/leafcutter/{Tissue}_v_{Tissue_2}_{Group}/input/groups_file.txt',
-        exons_file = 'scripts/davidaknowles_leafcutter/leafcutter/data/gencode31_exons.txt.gz'
+        perind_counts = 'DifferentialSplicing/leafcutter/DS_tests/{tissue_test}_{n}Samples/input/leafcutter_perind_numers.counts.gz',
+        groups_file = 'DifferentialSplicing/leafcutter/DS_tests/{tissue_test}_{n}Samples/input/groups_file.txt',
+        exons_file = 'Annotations/gencode44_exons.txt.gz' #'scripts/davidaknowles_leafcutter/leafcutter/data/gencode31_exons.txt.gz'
     output:
-        "DifferentialSplicing/leafcutter/{Tissue}_v_{Tissue_2}_{Group}/output/leafcutter_effect_sizes.txt",
-        "DifferentialSplicing/leafcutter/{Tissue}_v_{Tissue_2}_{Group}/output/leafcutter_cluster_significance.txt",
+        "DifferentialSplicing/leafcutter/DS_tests/{tissue_test}_{n}Samples/output/leafcutter_effect_sizes.txt",
+        "DifferentialSplicing/leafcutter/DS_tests/{tissue_test}_{n}Samples/output/leafcutter_cluster_significance.txt",
     wildcard_constraints:
-        Group = 'male_test|male_test2|female_test|female_test2|test|train',
-        Tissue = '|'.join(tissue_list),
-        Tissue_2 = '|'.join(tissue_list)
+        tissue_test = '|'.join(test_list),
+        n = '3|5'
+    params:
+        LeafcutterDS_params
     resources:
         mem_mb = 24000
     log:
-        "logs/leafcutter/run/{Tissue}_v_{Tissue_2}_{Group}.ds.log"
+        "logs/leafcutter/run/{tissue_test}_{n}.ds.log"
     shell:
         """
-        Rscript scripts/davidaknowles_leafcutter/scripts/leafcutter_ds.R --num_threads 4 {input.perind_counts} {input.groups_file} -i 3 -o DifferentialSplicing/leafcutter/{wildcards.Tissue}_v_{wildcards.Tissue_2}_{wildcards.Group}/output/leafcutter -e {input.exons_file} &> {log}
+        Rscript scripts/davidaknowles_leafcutter/scripts/leafcutter_ds.R --num_threads 4 {input.perind_counts} {input.groups_file} {params} -o DifferentialSplicing/leafcutter/DS_tests/{wildcards.tissue_test}_{wildcards.n}Samples/output/leafcutter -e {input.exons_file} &> {log}
         """
 
+rule collect_leafcutter:
+    input:
+        expand("DifferentialSplicing/leafcutter/DS_tests/{tissue_test}_{n}Samples/output/leafcutter_effect_sizes.txt",
+            tissue_test = test_list, n=['3', '5']),
+        expand("DifferentialSplicing/leafcutter/DS_tests/{tissue_test}_{n}Samples/output/leafcutter_cluster_significance.txt",
+            tissue_test = test_list, n=['3', '5']),
+        expand('DifferentialSplicing/leafcutter/DS_tests/{tissue_test}_{n}Samples/input/cluster_annotation.tab.gz',
+            tissue_test = test_list, n=['3', '5'])
         
-        
-        
-        
-        
+collect1 = ['Brain_Frontal_Cortex_BA9_v_Muscle_Skeletal',
+             'Liver_v_Whole_Blood',
+             'Lung_v_Skin_Not_Sun_Exposed_Suprapubic']
+             
+collect2 = ['Brain_Frontal_Cortex_BA9_v_Brain_Putamen_basal_ganglia']
+collect3 = ['BA9_1_v_BA9_2']
 
+rule collect_leafcutter_inputs_3_1:
+    input:
+        expand("DifferentialSplicing/leafcutter/DS_tests/{tissue_test}_3Samples/input/leafcutter_perind_numers.counts.gz",
+        tissue_test = collect1)
+        
+rule collect_leafcutter_inputs_3_2:
+    input:
+        expand("DifferentialSplicing/leafcutter/DS_tests/{tissue_test}_3Samples/input/leafcutter_perind_numers.counts.gz",
+        tissue_test = collect2)
+        
+rule collect_leafcutter_inputs_3_3:
+    input:
+        expand("DifferentialSplicing/leafcutter/DS_tests/{tissue_test}_3Samples/input/leafcutter_perind_numers.counts.gz",
+        tissue_test = collect3)
+        
+rule collect_leafcutter_inputs_5_1:
+    input:
+        expand("DifferentialSplicing/leafcutter/DS_tests/{tissue_test}_5Samples/input/leafcutter_perind_numers.counts.gz",
+        tissue_test = collect1)
+        
+rule collect_leafcutter_inputs_5_2:
+    input:
+        expand("DifferentialSplicing/leafcutter/DS_tests/{tissue_test}_5Samples/input/leafcutter_perind_numers.counts.gz",
+        tissue_test = collect2)
+        
+rule collect_leafcutter_inputs_5_3:
+    input:
+        expand("DifferentialSplicing/leafcutter/DS_tests/{tissue_test}_5Samples/input/leafcutter_perind_numers.counts.gz",
+        tissue_test = collect3)
+        
 
 
 

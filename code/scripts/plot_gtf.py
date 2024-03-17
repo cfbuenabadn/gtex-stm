@@ -134,19 +134,44 @@ def PlotTranscriptCoords(transcript_gtf, position=0, cds_coords=None, color='nav
         ax.set_ylim(-2.1, 3.1)
         # Set the x-limits of the axis
         ax.set_xlim(min_x - alpha, max_x + alpha)
-    
+
+    #############
+    line_x = [np.min([int(x[1]) for x in coord_list])-1, np.max([int(x[0]) for x in coord_list])+1]
+    ax.plot(line_x, [position + 0.5, position + 0.5], linewidth=1, color='grey', alpha=0.8, zorder=0)
+    ############################################
+    # for arrows, uncomment this
+    ############################################
     # Create blocks to represent the transcript
-    blocks = np.linspace(np.min([int(x[1]) for x in coord_list])-1, np.max([int(x[0]) for x in coord_list])+1, num=101)
+#     blocks = np.linspace(np.min([int(x[1]) for x in coord_list])-1, np.max([int(x[0]) for x in coord_list])+1, num=101)
 
-    # Calculate the step size
-    step = blocks[1] - blocks[0]
+#     # Calculate the step size
+#     step = blocks[1] - blocks[0]
+    
+#     # Gene strand
+    
+#     strand = transcript_gtf.strand.iloc[0]
+    
+#     if strand == '-':
+#         blocks = list(reversed(blocks))
 
-    # Create arrows to represent the blocks
-    for i in range(100):
-        plt.arrow(blocks[i], position + 0.5, step, 0, head_width=0.25, head_length=step/3, fc='k', 
-                  ec='k', linestyle='-', linewidth=1, color='grey',
-                  alpha=0.3, zorder=0)
+#     # Create arrows to represent the blocks
+    
+# #     print(strand)
+    
+#     for i in blocks[:100]:
+        
+#         if strand == '+':
+#             plt.arrow(i, position + 0.5, step, 0, head_width=0.25, head_length=step/3, fc='k', 
+#                       ec='k', linestyle='-', linewidth=1, color='grey',
+#                       alpha=0.3, zorder=0)
+#         else:
+#             plt.arrow(i, position + 0.5, -step, 0, head_width=0.25, head_length=step/3, fc='k', 
+#                   ec='k', linestyle='-', linewidth=1, color='grey',
+#                   alpha=0.3, zorder=0)
 
+    ##############################
+    ##############################
+    
     # Plot the transcript bed
     PlotBed(coord_list, y_position=position, color=color, ax=ax)
     
@@ -218,7 +243,7 @@ def PlotTranscript(gtf_transcript, position=0, cds=False, color='navy', ax=None)
     gtf_exons = gtf_transcript.loc[gtf_transcript.feature == 'exon']
     
     # Call the PlotTranscriptCoords function to plot the exons and CDS (if applicable)
-    PlotTranscriptCoords(gtf_exons[['start', 'end']], position=position, cds_coords=cds, color=color, ax=ax)
+    PlotTranscriptCoords(gtf_exons[['start', 'end', 'strand']], position=position, cds_coords=cds, color=color, ax=ax)
 
 
 def PlotGTF_ax(gene_gtf, ax, plot_nmd=False, plot_cds=False, collapse_transcripts=True):
@@ -303,7 +328,7 @@ def PlotGene(gene_gtf, plot_nmd=False, plot_cds=False, collapse_transcripts=True
         if collapse_transcripts:
             color = 'navy'
         else:
-            color = 'darkorange'
+            color = 'navy'
             
         for transcript, transcript_gtf in nmd_gtf.groupby('transcript_name'):
             PlotTranscript(transcript_gtf, position = position, ax=ax, cds=False, color=color)
@@ -332,3 +357,21 @@ def PlotGene(gene_gtf, plot_nmd=False, plot_cds=False, collapse_transcripts=True
     ax.set_xlabel(chrom + ' coordinates')
     ax.set_yticks([])
         
+def get_gene_gtf(gtf_df, gene):
+    try:
+        gtf_gene = gtf_df.loc[gtf_df.gene_id==gene]
+    except:
+        gtf_gene = gtf_df.loc[gtf_df.gene_name==gene]
+    gtf_exons = gtf_gene.loc[gtf_gene.feature=='exon']
+    strand = gtf_gene.strand.iloc[0]
+    
+    if strand == '+':
+        start = gtf_gene.loc[gtf_gene.feature=='start_codon'].start.min()
+        stop = gtf_gene.loc[gtf_gene.feature=='stop_codon'].end.max()
+    else:
+        start = gtf_gene.loc[gtf_gene.feature=='stop_codon'].start.min()
+        stop = gtf_gene.loc[gtf_gene.feature=='start_codon'].end.max()
+    
+    cds = (start, stop)
+    
+    return gtf_exons, cds
