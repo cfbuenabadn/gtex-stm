@@ -61,7 +61,7 @@ rule ebpmf_run:
         GetLogParams
     shell:
         """
-        {config[Rscript]} scripts/run_ebpmf.R {wildcards.gene} {wildcards.K} {params} {output} &> {log}
+        {config[Rscript]} scripts/run_ebpmf_old.R {wildcards.gene} {wildcards.K} {params} {output} &> {log}
         """
         
 rule ebpmf_run_subset:
@@ -121,6 +121,13 @@ rule collect_ebpmf:
         expand('ebpmf_models/tables/{gene}/lm_K{K}.tab.gz', K = ['2', '3', '4', '5'], gene = prueba_genes + list(selected_genes.gene))
     
 
+def get_strand(wildcards):
+    strand = selected_genes.loc[selected_genes.gene == wildcards.gene].strand.iloc[0]
+    if strand == '+':
+        strand = 'plus'
+    else:
+        strand = 'minus'
+    return strand
 
 rule ebpmf_run_filtered:
     input:
@@ -133,11 +140,114 @@ rule ebpmf_run_filtered:
         mem_mb = 62000,
     wildcard_constraints:
         gene = '|'.join(list(selected_genes.gene)),
+    params:
+        strand = get_strand
     shell:
         """
-        {config[Rscript]} scripts/run_ebpmf_filtered.R {wildcards.gene} &> {log}
+        {config[Rscript]} scripts/run_ebpmf_filtered.R {wildcards.gene} {params.strand} &> {log}
+        """
+
+rule ebpmf_run_single_tissue:
+    input:
+        "coverage/counts_filtered/{gene}.csv.gz"
+    output:
+        'ebpmf_models/single_tissue/RDS/{gene}.rds',
+    log:
+        'logs/ebpmf_run/{gene}.single_tissue.log'
+    resources:
+        mem_mb = 24000,
+    wildcard_constraints:
+        gene = '|'.join(list(selected_genes.gene)),
+    params:
+        strand = get_strand
+    shell:
+        """
+        ({config[Rscript]} scripts/run_ebpmf_single_tissue.R {wildcards.gene} {params.strand}) &> {log}
         """
 
 rule collect_ebpmf_filtered:
     input:
-        expand('ebpmf_models/filtered/RDS/{gene}.rds', gene = list(selected_genes.gene)[17000:])
+        expand('ebpmf_models/filtered/RDS/{gene}.rds', gene = list(selected_genes.gene)[:3500])
+
+rule collect_ebpmf_single_tissue:
+    input:
+        expand('ebpmf_models/single_tissue/RDS/{gene}.rds', gene = list(selected_genes.gene)[7200:9303])
+
+
+rule GetGeneUniqueCounts:
+    output:
+        'ebpmf_models/filtered/K10/genes/{gene}.unique_region_counts.tab.gz'
+    log:
+        '/scratch/midway3/cnajar/logs/collect_unique_counts/{gene}.log'
+    resources:
+        mem_mb = 24000
+    wildcard_constraints:
+        gene = '|'.join(list(selected_genes.gene))
+    shell:
+        """
+        python scripts/get_unique_region_counts.py {wildcards.gene} &> {log}
+        """
+
+rule CollectUniqueCounts:
+    input:
+        expand('ebpmf_models/filtered/K10/genes/{gene_id}.unique_region_counts.tab.gz', gene_id = list(selected_genes.gene))
+
+rule GetGeneUniqueCountsAll:
+    output:
+        'ebpmf_models/filtered/snmf_10/unique_regions/{gene}.unique_region_counts.tab.gz'
+    log:
+        '/scratch/midway3/cnajar/logs/collect_unique_counts_all/{gene}.log'
+    resources:
+        mem_mb = 24000
+    wildcard_constraints:
+        gene = '|'.join(list(selected_genes.gene))
+    shell:
+        """
+        python scripts/get_unique_counts_per_annotation.py {wildcards.gene} &> {log}
+        """
+
+rule CollectUniqueCountsAll:
+    input:
+        expand('ebpmf_models/filtered/snmf_10/unique_regions/{gene_id}.unique_region_counts.tab.gz', gene_id = whole_genes)
+
+rule GetGeneUniqueRegionCounts:
+    output:
+        'ebpmf_models/filtered/snmf_10/unique_regions_per_gene/{gene}.unique_region_counts.tab.gz'
+    log:
+        '/scratch/midway3/cnajar/logs/collect_unique_counts_regions_per_gene/{gene}.log'
+    resources:
+        mem_mb = 24000
+    wildcard_constraints:
+        gene = '|'.join(list(selected_genes.gene))
+    shell:
+        """
+        python scripts/get_counts_per_unique_regions.py {wildcards.gene} &> {log}
+        """
+
+rule CollectUniqueRegionCountsAll:
+    input:
+        expand('ebpmf_models/filtered/snmf_10/unique_regions_per_gene/{gene_id}.unique_region_counts.tab.gz', gene_id = whole_genes)
+
+
+#['ENSG00000166710', 'ENSG00000105048', 
+#'ENSG00000178982', 'ENSG00000018625', 'ENSG00000112081','ENSG00000067225', 'ENSG00000067221', 'ENSG00000077522', 'ENSG00000003402', 
+#'ENSG00000109066', 'ENSG00000170175']#
+
+
+rule ebpmf_run_whole_gene:
+    input:
+        "coverage/counts_whole_gene/{gene}.csv.gz"
+    output:
+        'ebpmf_models/whole_gene/RDS/{gene}.rds',
+    log:
+        '/scratch/midway3/cnajar/logs/ebpmf_run_whole_gene/{gene}.log'
+    resources:
+        mem_mb = 62000,
+    wildcard_constraints:
+        gene = '|'.join(list(selected_genes.gene)),
+    params:
+        strand = get_strand
+    shell:
+        """
+        {config[Rscript]} scripts/run_ebpmf_whole_gene.R {wildcards.gene} {params.strand} &> {log}
+        """

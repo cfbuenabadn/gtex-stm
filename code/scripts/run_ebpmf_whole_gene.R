@@ -72,7 +72,7 @@ tissues <- c('Brain_Anterior_cingulate_cortex_BA24',
              'Skin_Not_Sun_Exposed_Suprapubic', 
              'Whole_Blood')
 
-counts <- paste0("coverage/counts_filtered/", gene_name, ".csv.gz") %>%
+counts <- paste0("coverage/counts_whole_gene/", gene_name, ".csv.gz") %>%
     read_csv() %>%
     column_to_rownames(var = "Sample_ID") 
 
@@ -99,7 +99,7 @@ counts <- counts[rowSums(counts) >= 100, ]
 kept_samples <- (counts %>% dim())[1]
 
 if (kept_samples < 50){
-    out_rds <- paste0('ebpmf_models/filtered/RDS/', gene_name, '.rds')
+    out_rds <- paste0('ebpmf_models/whole_gene/RDS/', gene_name, '.rds')
 
     saveRDS(list(gene=gene_name,
                  coords = coords,
@@ -133,9 +133,6 @@ group_matrix <- function(df, k = 10){
   return(output_df)
 }
 
-
-attributes <- read_tsv(paste0('coverage/counts_filtered_stats/', gene_name, '.stats'), col_names = c('trait', 'quant'))
-#nbases_total <- attributes %>% filter(trait == 'total_length') %>% pull(quant) %>% as.numeric()
 
 nbases_total <- dim(counts)[2] ### CHANGED
 
@@ -183,40 +180,10 @@ train_and_test_ebpmf <- function(counts, train_samples, K, junctions_bed, coords
     train_fit <- run_ebpmf(counts, K)
     test_predict <- predict_factors(counts_test, train_fit$EF)
 
-    isoforms_bed <- get_isoforms(train_fit$EF_smooth, junctions_bed, coords, smooth_fraction = 0.25)
-    isoforms_strict_bed <- get_isoforms(train_fit$EF_smooth, junctions_bed, coords, smooth_fraction = 0.5)
-
-    isoforms_bed_bias <- get_isoforms(train_fit$EF_smooth, junctions_bed, coords, smooth_fraction = 0.25, correct_bias=FALSE)
-    isoforms_strict_bed_bias <- get_isoforms(train_fit$EF_smooth, junctions_bed, coords, smooth_fraction = 0.5, correct_bias=FALSE)
-
-    isoforms_bed_bias_selected <- get_isoforms(train_fit$EF_smooth, junctions_bed, coords, smooth_fraction = 0.25, strand=strand)
-    isoforms_strict_bed_bias_selected <- get_isoforms(train_fit$EF_smooth, junctions_bed, coords, smooth_fraction = 0.5, strand=strand)
-
-    merged_isoforms <- merge_isoforms(isoforms_bed)
-    merged_isoforms_strict <- merge_isoforms(isoforms_strict_bed)
-
-    merged_isoforms_bias <- merge_isoforms(isoforms_bed_bias)
-    merged_isoforms_strict_bias <- merge_isoforms(isoforms_strict_bed_bias)
-
-    merged_isoforms_bias_selected <- merge_isoforms(isoforms_bed_bias_selected)
-    merged_isoforms_strict_bias_selected <- merge_isoforms(isoforms_strict_bed_bias_selected)
-
-    isoforms <- list(isoforms = isoforms_bed, merged_isoforms = merged_isoforms)
-    isoforms_strict <- list(isoforms = isoforms_strict_bed, merged_isoforms = merged_isoforms_strict)
-
-    isoforms_bias <- list(isoforms = isoforms_bed_bias, merged_isoforms = merged_isoforms_bias)
-    isoforms_strict_bias <- list(isoforms = isoforms_strict_bed_bias, merged_isoforms = merged_isoforms_strict_bias)
-
-    isoforms_bias_selected <- list(isoforms = isoforms_bed_bias_selected, merged_isoforms = merged_isoforms_bias_selected)
-    isoforms_strict_bias_selected <- list(isoforms = isoforms_strict_bed_bias_selected, merged_isoforms = merged_isoforms_strict_bias_selected)
-
-
     train_samples_ <- rownames(counts)
     test_samples_ <- rownames(counts_test)
     
-    out <- list(train_fit=train_fit, test_predict=test_predict, isoforms=isoforms, isoforms_strict=isoforms_strict, 
-                isoforms_bias=isoforms_bias, isoforms_strict_bias=isoforms_strict_bias, 
-                isoforms_bias_selected=isoforms_bias_selected, isoforms_strict_bias_selected=isoforms_strict_bias_selected, 
+    out <- list(train_fit=train_fit, test_predict=test_predict,
                 train_samples = train_samples_, test_samples = test_samples_, coords = coords)
     return(out)
     }
@@ -236,82 +203,9 @@ print('hola done')
 
 nbases <- dim(counts)[2]
 
-#if ((nbases_total > 20000) & (nbases_total < 30000)){
-#    
-#    n_slice = as.integer(nbases/2)
-#    counts_slice1 <- counts[,1:n_slice]
-#    counts_slice2 <- counts[,n_slice:nbases]
-#
-#    counts_slice1 <- counts_slice1[rowSums(counts_slice1) >= 100, ]
-#    counts_slice2 <- counts_slice2[rowSums(counts_slice2) >= 100, ]
-#
-#    if (dim(counts_slice1)[1] > 1){
-#      fit1 <-  train_and_test_ebpmf(counts_slice1, rownames(samples), 3, junctions_bed, coords)
-#    } else {fit1 <- NULL}
-#    if (dim(counts_slice2)[1] > 1){
-#      fit2 <-  train_and_test_ebpmf(counts_slice2, rownames(samples), 3, junctions_bed, coords)
-#    } else {fit2 <- NULL}
-#
-#    subset_fit <- list(fit1 = fit1, fit2 = fit2, nbases=nbases, nbases_total=nbases_total, n_slice = n_slice)
-#    
-#} else if ((nbases_total > 30000) & (nbases_total < 40000)){
-#    
-#    n_slice = as.integer(nbases/3)
-#    counts_slice1 <- counts[,1:n_slice]
-#    counts_slice2 <- counts[,n_slice:(2*n_slice)]
-#    counts_slice3 <- counts[,(2*n_slice):nbases]
-#
-#    counts_slice1 <- counts_slice1[rowSums(counts_slice1) >= 100, ]
-#    counts_slice2 <- counts_slice2[rowSums(counts_slice2) >= 100, ]
-#    counts_slice3 <- counts_slice3[rowSums(counts_slice3) >= 100, ]
-#
-#    if (dim(counts_slice1)[1] > 1){
-#      fit1 <-  train_and_test_ebpmf(counts_slice1, rownames(samples), 3, junctions_bed, coords)
-#    } else {fit1 <- NULL}
-#    if (dim(counts_slice2)[1] > 1){
-#      fit2 <-  train_and_test_ebpmf(counts_slice2, rownames(samples), 3, junctions_bed, coords)
-#    } else {fit2 <- NULL}
-#    if (dim(counts_slice3)[1] > 1){
-#      fit3 <-  train_and_test_ebpmf(counts_slice3, rownames(samples), 3, junctions_bed, coords)
-#    } else {fit3 <- NULL}
-#
-#    subset_fit <- list(fit1 = fit1, fit2 = fit2, fit3 = fit3, nbases=nbases, nbases_total=nbases_total, n_slice = n_slice)
-#    
-#} else if (nbases_total > 40000){
-#    
-#    n_slice = as.integer(nbases/4)
-#    counts_slice1 <- counts[,1:n_slice]
-#    counts_slice2 <- counts[,n_slice:(2*n_slice)]
-#    counts_slice3 <- counts[,(2*n_slice):(3*n_slice)]
-#    counts_slice4 <- counts[,(3*n_slice):nbases]
-#
-#    counts_slice1 <- counts_slice1[rowSums(counts_slice1) >= 100, ]
-#    counts_slice2 <- counts_slice2[rowSums(counts_slice2) >= 100, ]
-#    counts_slice3 <- counts_slice3[rowSums(counts_slice3) >= 100, ]
-#    counts_slice4 <- counts_slice4[rowSums(counts_slice4) >= 100, ]
-#
-#    if (dim(counts_slice1)[1] > 1){
-#      fit1 <-  train_and_test_ebpmf(counts_slice1, rownames(samples), 3, junctions_bed, coords)
-#    } else {fit1 <- NULL}
-#    if (dim(counts_slice2)[1] > 1){
-#      fit2 <-  train_and_test_ebpmf(counts_slice2, rownames(samples), 3, junctions_bed, coords)
-#    } else {fit2 <- NULL}
-#    if (dim(counts_slice3)[1] > 1){
-#      fit3 <-  train_and_test_ebpmf(counts_slice3, rownames(samples), 3, junctions_bed, coords)
-#    } else {fit3 <- NULL}
-#    if (dim(counts_slice4)[1] > 1){
-#      fit4 <-  train_and_test_ebpmf(counts_slice4, rownames(samples), 3, junctions_bed, coords)
-#    } else {fit4 <- NULL}
-#
-#    subset_fit <- list(fit1 = fit1, fit2 = fit2, fit3 = fit3, fit4 = fit4, nbases=nbases, nbases_total=nbases_total, n_slice = n_slice)
-#    
-#} else {
-#    subset_fit <- NULL
-#}
-
 print('hola final')
 
-out_rds <- paste0('ebpmf_models/filtered/RDS/', gene_name, '.rds')
+out_rds <- paste0('ebpmf_models/whole_gene/RDS/', gene_name, '.rds')
 
 train_samples = rownames(samples)
 test_samples = rownames(counts)[!(rownames(counts) %in% train_samples)]
@@ -326,8 +220,7 @@ saveRDS(list(gene=gene_name,
              coords = coords,
              train_samples = train_samples,
              test_samples = test_samples,
-             strand = strand#,
-             #subset_fit = subset_fit
+             strand = strand
             ),
         file=out_rds
        )

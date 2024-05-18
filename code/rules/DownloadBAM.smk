@@ -260,5 +260,53 @@ rule DownloadFromGTEx_TestSamples_juncs:
         (./gen3-client download-multiple --profile=AnVIL --manifest={input.manifest} --download-path=/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/TestSamples/juncs/ --protocol=s3) &> {log}
         """
         
-        
-        
+
+use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Muscle_Skeletal_rMATS with:
+    output:
+        temp(expand(
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download-for-DS/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam", 
+        IndID = muscle_skeletal_samples
+        ))
+    wildcard_constraints:
+        Tissue = 'Muscle_Skeletal'
+
+use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Brain_Frontal_Cortex_BA9_rMATS with:
+    output:
+        temp(expand(
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download-for-DS/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
+        IndID = BA9_samples
+        ))
+    wildcard_constraints:
+        Tissue = 'Brain_Frontal_Cortex_BA9'
+
+use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Whole_Blood_rMATS with:
+    output:
+        temp(expand(
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download-for-DS/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
+        IndID = whole_blood_samples
+        ))
+    wildcard_constraints:
+        Tissue = 'Whole_Blood'
+
+use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Liver_rMATS with:
+    output:
+        temp(expand(
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download-for-DS/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
+        IndID = liver_samples
+        ))
+    wildcard_constraints:
+        Tissue = 'Liver'
+
+rule BamIndex_DS:
+    input:
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download-for-DS/{Tissue}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam"
+    output:
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download-for-DS/{Tissue}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.bai"
+    log:
+        "logs/indexbam-for-DS/{Tissue}.{IndID}.log"
+    resources:
+        mem_mb = 24000
+    shell:
+        """
+        samtools index {input} {output} > {log}
+        """

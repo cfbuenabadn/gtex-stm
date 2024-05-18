@@ -12,14 +12,47 @@ library(smashr)
 library(ebpmf.alpha)
 library(Matrix)
 
+source('/project2/mstephens/cfbuenabadn/gtex-stm/code/scripts/process_factor_functions.R')
+
 args = commandArgs(trailingOnly=TRUE)
 gene_name = args[1]
-log_counts = as.logical(args[3])
-out_rds = args[4]
-out_EF = args[5]
-out_EF_smooth = args[6]
-out_EL = args[7]
-out_EL_test = args[8]
+
+set.seed(123)
+
+predict_factors <- function(counts, EF){
+    FF <- as.matrix(EF)
+    FF %>% dim() %>% print()
+    set.seed(123)
+    fit_init = init_poisson_nmf(counts, F = FF, init.method = 'random')
+    out = fit_poisson_nmf(counts,fit0=fit_init,update.factors = NULL)
+    return(out)
+}
+
+run_ebpmf <- function(counts, K) {
+
+    ebpmf_out <- tryCatch(
+        {
+        lib_size <- rowSums(counts) %>% as.integer()
+        set.seed(123)
+        fit = ebpmf.alpha::ebpmf_identity(as.matrix(counts),K, lib_size=lib_size)
+    
+        ebpmf_out <- list(EF = fit$EF,
+                          EF_smooth = fit$EF_smooth,
+                          EL = fit$EL,
+                          elbo = fit$elbo,
+                          coords = colnames(counts),
+                          samples = rownames(counts)
+                          )
+        },
+        error = function(e) {
+            ebpmf_out <- NULL
+            }
+        )
+
+    return(ebpmf_out)
+    
+    }
+
 
 tissues <- c('Brain_Anterior_cingulate_cortex_BA24', 
              'Brain_Cortex', 
@@ -32,172 +65,241 @@ tissues <- c('Brain_Anterior_cingulate_cortex_BA24',
              'Skin_Not_Sun_Exposed_Suprapubic', 
              'Whole_Blood')
 
-
-counts <- paste0("coverage/count_tables/", gene_name, ".tab.gz") %>%
-    read_tsv() %>%
+counts <- paste0("coverage/counts_total/", gene_name, ".csv.gz") %>%
+    read_csv() %>%
     column_to_rownames(var = "Sample_ID") 
 
 
-test_samples <- character(0)
-train_samples <- character(0)
+################
 
-# Loop through the elements of my_vector
-for (element in row.names(counts)) {
-  # Use regex to extract the prefix (X) and suffix (Y)
-  match <- regmatches(element, regexpr("\\.(test|train)$", element))
-  if (length(match) > 0) {
-    # Remove ".Y" and add to the appropriate vector
-    if (match == ".test") {
-      test_samples <- c(test_samples, sub("\\.test$", "", element))
-    } else if (match == ".train") {
-      train_samples <- c(train_samples, sub("\\.train$", "", element))
-    }
-  }
+## This is to protect from earlier pandas versions that were messing up the order of bp in the filtering step
+
+coords_to_sort <- counts %>% colnames()
+chrom <- (coords_to_sort[1] %>% strsplit(., ':'))[[1]][1]
+
+coords_to_sort <- sapply(strsplit(coords_to_sort, ":"), function(x) as.integer(x[2])) %>% sort()
+sorted_coords <- paste0(chrom, ':', coords_to_sort)
+counts <- counts[sorted_coords]
+                         
+################
+
+row.names(counts) <- counts %>% row.names() %>% sub("\\..*", "", .)
+
+coords <- colnames(counts)
+
+counts <- counts[rowSums(counts) >= 100, ]
+
+kept_samples <- (counts %>% dim())[1]
+
+if (kept_samples < 50){
+    out_rds <- paste0('ebpmf_models/filtered/RDS/', gene_name, '.rds')
+
+    saveRDS(list(gene=gene_name,
+                 coords = coords,
+                 ebpmf_run = NULL
+                ),
+            file=out_rds
+       )
+} else {
+
+
+group_matrix <- function(df, k = 10){
+  n_groups <- ncol(df) %/% k
+  
+  # Split dataframe into groups of k columns and sum them
+  output <- lapply(seq_len(n_groups), function(i) {
+    group_start_col <- k * (i - 1) + 1
+    group_end_col <- min(k * i, ncol(df))
+    
+    group_sum <- rowSums(df[, group_start_col:group_end_col], na.rm = TRUE)
+    
+    # Create a new data frame with one column and set its name
+    group_df <- data.frame(group_sum)
+    colnames(group_df) <- colnames(df)[group_start_col]
+    
+    return(group_df)
+  })
+  
+  # Combine the output into a single dataframe
+  output_df <- do.call(cbind, output)
+  
+  return(output_df)
 }
 
-     
-row.names(counts) <- counts %>% row.names() %>% sub("\\..*", "", .)
+
+attributes <- read_tsv(paste0('coverage/counts_filtered_stats/', gene_name, '.stats'), col_names = c('trait', 'quant'))
+#nbases_total <- attributes %>% filter(trait == 'total_length') %>% pull(quant) %>% as.numeric()
+
+nbases_total <- dim(counts)[2] ### CHANGED
+
+if ((nbases_total > 30000) & (nbases_total < 60000)){
+    print('warning: matrix is too big; merging groups of 2 base pairs to reduce size.')
+    counts <- counts %>% group_matrix(., 2)
+} else if (nbases_total > 60000){
+    print('warning: matrix is too big; merging groups of 5 base pairs to reduce size.')
+    counts <- counts %>% group_matrix(., 5)
+}
 
 ##########################################################################
 
-if (log_counts){
-    print('monitor if logging counts')
-    counts <- (counts+1) %>% log2() %>% round()
-}
-    
-coords <- colnames(counts)
-matrix_cols <- c('pois1', coords, 'pois2')
-
-nsamples_filtered <- dim(counts)[1]
-
-counts <- cbind(rpois(nsamples_filtered, 0.1), counts, rpois(nsamples_filtered, 0.1)) %>% as.matrix()
-# logCounts <- cbind(rpois(nsamples_filtered, 0.1), logCounts, rpois(nsamples_filtered, 0.1)) %>% as.matrix()
-
-colnames(counts) <- matrix_cols
-# colnames(logCounts) <- matrix_cols
-
-
-train_model <- function(counts, K, init='fasttopics'){
-    
-    #if (init == 'sgom'){
-    #    fit_sgom_nugget = cluster.mix(counts,K=K,tol=1e-3,maxit = 100,nugget=TRUE)
-    #    init <- list(F_init=t(fit_sgom_nugget$phi), L_init=fit_sgom_nugget$pi)}
-    fit_ebpmf = ebpmf_identity(counts,K=K,tol = 1e-3,maxiter = 100, init = init)
-    return(fit_ebpmf)
-}
-     
-
-fit_ebpmf <- train_model(counts[train_samples,], K)
-
-############################
- 
-get_model_list <- function(ebpmf_model){
-    out_list <- list(EF = ebpmf_model$EF,
-                     EF_smooth = ebpmf_model$EF_smooth,
-                     EL = ebpmf_model$EL)
-    return(out_list)
-}
-
-
-predict_factors <- function(counts, EF){
-    FF <- as.matrix(EF)
-    FF %>% dim() %>% print()
-    fit_init = init_poisson_nmf(counts, F = FF, init.method = 'random')
-    out = fit_poisson_nmf(counts,fit0=fit_init,update.factors = NULL)
-    return(out)
-}
-
-     
-
-get_model_k_list <- function(ebpmf_model, ebpmf_sgom_model, counts, test_samples){
-    
-    ebpmf_model_list <- get_model_list(ebpmf_model)
-    ebpmf_sgom_model_list <- get_model_list(ebpmf_sgom_model)
-    
-    ebpmf_test <- predict_factors(counts[test_samples,], ebpmf_model_list$EF)
-    ebpmf_test_L = (ebpmf_test$L)/rowSums(ebpmf_test$L)
-    
-    ebpmf_sgom_test <- predict_factors(counts[test_samples,], ebpmf_sgom_model_list$EF)
-    ebpmf_sgom_test_L = (ebpmf_sgom_test$L)/rowSums(ebpmf_sgom_test$L)
-    
-    ebpmf_K <- list(ebpmf_model = ebpmf_model_list,
-                    ebpmf_sgom_model = ebpmf_sgom_model_list,
-                    ebpmf_test_L = ebpmf_test_L,
-                    ebpmf_sgom_test_L = ebpmf_sgom_test_L)
-    return(ebpmf_K)
-    }
-
-ebpmf_model <- get_model_k_list(fit_ebpmf, fit_ebpmf_sgom, counts, test_samples)
-# log_ebpmf_model <- get_model_k_list(log_fit_ebpmf, log_fit_ebpmf_sgom, logCounts, test_samples)
-     
-sample_names <- row.names(counts)
 
 samples <- read_tsv('config/samples.tsv') %>%
     column_to_rownames(var = "X1") %>%
     filter((group=='train') & (tissue_id %in% tissues)) 
 
-annotation = data.frame(sample_id = sample_names,
-                         tissue_label = factor(samples[sample_names,'tissue_id']))
+junctions_bed <- run_tabix(coords, '/project2/mstephens/cfbuenabadn/gtex-stm/code/junctions.tab.gz', gene_name)
 
+train_and_test_ebpmf <- function(counts, train_samples, K, junctions_bed, coords){
+
+    coords <- colnames(counts)
+
+    matrix_cols <- c('pois1', coords, 'pois2')
+    nsamples <- dim(counts)[1]
+
+    set.seed(123)
+    counts <- cbind(rpois(nsamples, 0.2), counts, rpois(nsamples, 0.2)) %>% as.matrix()
+    colnames(counts) <- matrix_cols
+    
+    
+    counts_test <- counts %>% 
+                     as.data.frame() %>%
+                     filter(!(rownames(counts) %in% train_samples)) %>% 
+                     as.matrix()
+    
+    counts <- counts %>% 
+                as.data.frame() %>%
+                filter(rownames(counts) %in% train_samples) %>% 
+                as.matrix()
+    
+    
+
+    train_fit <- run_ebpmf(counts, K)
+    test_predict <- predict_factors(counts_test, train_fit$EF)
+
+    isoforms_bed <- get_isoforms(train_fit$EF_smooth, junctions_bed, coords, smooth_fraction = 0.25)
+    isoforms_strict_bed <- get_isoforms(train_fit$EF_smooth, junctions_bed, coords, smooth_fraction = 0.5)
+
+    merged_isoforms <- merge_isoforms(isoforms_bed)
+    merged_isoforms_strict <- merge_isoforms(isoforms_strict_bed)
+
+    isoforms <- list(isoforms = isoforms_bed, merged_isoforms = merged_isoforms)
+    isoforms_strict <- list(isoforms = isoforms_strict_bed, merged_isoforms = merged_isoforms_strict)
+    
+
+    out <- list(train_fit=train_fit, test_predict=test_predict, isoforms=isoforms, isoforms_strict=isoforms_strict)
+    return(out)
+    }
+
+
+print('hola 2')
+ebpmf_2 <- train_and_test_ebpmf(counts, rownames(samples), 2, junctions_bed, coords)
+print('hola 3')
+ebpmf_3 <- train_and_test_ebpmf(counts, rownames(samples), 3, junctions_bed, coords)
+print('hola 4')
+ebpmf_4 <- train_and_test_ebpmf(counts, rownames(samples), 4, junctions_bed, coords)
+print('hola 5')
+ebpmf_5 <- train_and_test_ebpmf(counts, rownames(samples), 5, junctions_bed, coords)
+print('hola 10')
+ebpmf_10 <- train_and_test_ebpmf(counts, rownames(samples), 10, junctions_bed, coords)
+print('hola done')
+
+nbases <- dim(counts)[2]
+
+#if ((nbases_total > 20000) & (nbases_total < 30000)){
+#    
+#    n_slice = as.integer(nbases/2)
+#    counts_slice1 <- counts[,1:n_slice]
+#    counts_slice2 <- counts[,n_slice:nbases]
+#
+#    counts_slice1 <- counts_slice1[rowSums(counts_slice1) >= 100, ]
+#    counts_slice2 <- counts_slice2[rowSums(counts_slice2) >= 100, ]
+#
+#    if (dim(counts_slice1)[1] > 1){
+#      fit1 <-  train_and_test_ebpmf(counts_slice1, rownames(samples), 3, junctions_bed, coords)
+#    } else {fit1 <- NULL}
+#    if (dim(counts_slice2)[1] > 1){
+#      fit2 <-  train_and_test_ebpmf(counts_slice2, rownames(samples), 3, junctions_bed, coords)
+#    } else {fit2 <- NULL}
+#
+#    subset_fit <- list(fit1 = fit1, fit2 = fit2, nbases=nbases, nbases_total=nbases_total, n_slice = n_slice)
+#    
+#} else if ((nbases_total > 30000) & (nbases_total < 40000)){
+#    
+#    n_slice = as.integer(nbases/3)
+#    counts_slice1 <- counts[,1:n_slice]
+#    counts_slice2 <- counts[,n_slice:(2*n_slice)]
+#    counts_slice3 <- counts[,(2*n_slice):nbases]
+#
+#    counts_slice1 <- counts_slice1[rowSums(counts_slice1) >= 100, ]
+#    counts_slice2 <- counts_slice2[rowSums(counts_slice2) >= 100, ]
+#    counts_slice3 <- counts_slice3[rowSums(counts_slice3) >= 100, ]
+#
+#    if (dim(counts_slice1)[1] > 1){
+#      fit1 <-  train_and_test_ebpmf(counts_slice1, rownames(samples), 3, junctions_bed, coords)
+#    } else {fit1 <- NULL}
+#    if (dim(counts_slice2)[1] > 1){
+#      fit2 <-  train_and_test_ebpmf(counts_slice2, rownames(samples), 3, junctions_bed, coords)
+#    } else {fit2 <- NULL}
+#    if (dim(counts_slice3)[1] > 1){
+#      fit3 <-  train_and_test_ebpmf(counts_slice3, rownames(samples), 3, junctions_bed, coords)
+#    } else {fit3 <- NULL}
+#
+#    subset_fit <- list(fit1 = fit1, fit2 = fit2, fit3 = fit3, nbases=nbases, nbases_total=nbases_total, n_slice = n_slice)
+#    
+#} else if (nbases_total > 40000){
+#    
+#    n_slice = as.integer(nbases/4)
+#    counts_slice1 <- counts[,1:n_slice]
+#    counts_slice2 <- counts[,n_slice:(2*n_slice)]
+#    counts_slice3 <- counts[,(2*n_slice):(3*n_slice)]
+#    counts_slice4 <- counts[,(3*n_slice):nbases]
+#
+#    counts_slice1 <- counts_slice1[rowSums(counts_slice1) >= 100, ]
+#    counts_slice2 <- counts_slice2[rowSums(counts_slice2) >= 100, ]
+#    counts_slice3 <- counts_slice3[rowSums(counts_slice3) >= 100, ]
+#    counts_slice4 <- counts_slice4[rowSums(counts_slice4) >= 100, ]
+#
+#    if (dim(counts_slice1)[1] > 1){
+#      fit1 <-  train_and_test_ebpmf(counts_slice1, rownames(samples), 3, junctions_bed, coords)
+#    } else {fit1 <- NULL}
+#    if (dim(counts_slice2)[1] > 1){
+#      fit2 <-  train_and_test_ebpmf(counts_slice2, rownames(samples), 3, junctions_bed, coords)
+#    } else {fit2 <- NULL}
+#    if (dim(counts_slice3)[1] > 1){
+#      fit3 <-  train_and_test_ebpmf(counts_slice3, rownames(samples), 3, junctions_bed, coords)
+#    } else {fit3 <- NULL}
+#    if (dim(counts_slice4)[1] > 1){
+#      fit4 <-  train_and_test_ebpmf(counts_slice4, rownames(samples), 3, junctions_bed, coords)
+#    } else {fit4 <- NULL}
+#
+#    subset_fit <- list(fit1 = fit1, fit2 = fit2, fit3 = fit3, fit4 = fit4, nbases=nbases, nbases_total=nbases_total, n_slice = n_slice)
+#    
+#} else {
+#    subset_fit <- NULL
+#}
+
+print('hola final')
+
+out_rds <- paste0('ebpmf_models/filtered/RDS/', gene_name, '.rds')
+
+train_samples = rownames(samples)
+test_samples = rownames(counts)[!(rownames(counts) %in% train_samples)]
+print('hola save')
 
 saveRDS(list(gene=gene_name,
-             K = K,
-             annotation = annotation,
-             ebpmf_model = ebpmf_model,
+             ebpmf_2 = ebpmf_2,
+             ebpmf_3 = ebpmf_3,
+             ebpmf_4 = ebpmf_4,
+             ebpmf_5 = ebpmf_5,
+             ebpmf_10 = ebpmf_10,
              coords = coords,
              train_samples = train_samples,
-             test_samples = test_samples
+             test_samples = test_samples#,
+             #subset_fit = subset_fit
             ),
         file=out_rds
        )
-     
-EF <- ebpmf_model$ebpmf_model$EF %>% as.data.frame()
-factor_names <- colnames(EF)
-EF['coords'] <- EF %>% row.names()
-EF <- EF[,c('coords', factor_names)]
-EF %>% as.data.frame() %>% write_tsv(out_EF)
-     
-EF_smooth <- ebpmf_model$ebpmf_model$EF_smooth %>% as.data.frame()
-factor_names <- colnames(EF_smooth)
-EF_smooth['coords'] <- EF_smooth %>% row.names()
-EF_smooth <- EF_smooth[,c('coords', factor_names)]
-EF_smooth %>% as.data.frame() %>% write_tsv(out_EF_smooth)
-     
-EL <- ebpmf_model$ebpmf_model$EL %>% as.data.frame()
-factor_names <- colnames(EL)
-EL['Sample_ID'] <- EL %>% row.names()
-EL <- EL[,c('Sample_ID', factor_names)]
-EL %>% as.data.frame() %>% write_tsv(out_EL)
-     
-EL_test <- ebpmf_model$ebpmf_test_L %>% as.data.frame()
-factor_names <- colnames(EL_test)
-EL_test['Sample_ID'] <- EL_test %>% row.names()
-EL_test <- EL_test[,c('Sample_ID', factor_names)]
-EL_test %>% as.data.frame() %>% write_tsv(out_EL_test)
-     
+print('hola done')
 
-     
-EF <- ebpmf_model$ebpmf_sgom_model$EF %>% as.data.frame()
-factor_names <- colnames(EF)
-EF['coords'] <- EF %>% row.names()
-EF <- EF[,c('coords', factor_names)]
-EF %>% as.data.frame() %>% write_tsv(sgom_out_EF)
-     
-EF_smooth <- ebpmf_model$ebpmf_sgom_model$EF_smooth %>% as.data.frame()
-factor_names <- colnames(EF_smooth)
-EF_smooth['coords'] <- EF_smooth %>% row.names()
-EF_smooth <- EF_smooth[,c('coords', factor_names)]
-EF_smooth %>% as.data.frame() %>% write_tsv(sgom_out_EF_smooth)
-     
-EL <- ebpmf_model$ebpmf_sgom_model$EL %>% as.data.frame()
-factor_names <- colnames(EL)
-EL['Sample_ID'] <- EL %>% row.names()
-EL <- EL[,c('Sample_ID', factor_names)]
-EL %>% as.data.frame() %>% write_tsv(sgom_out_EL)
 
-     
-EL_test <- ebpmf_model$ebpmf_sgom_test_L %>% as.data.frame()
-factor_names <- colnames(EL_test)
-EL_test['Sample_ID'] <- EL_test %>% row.names()
-EL_test <- EL_test[,c('Sample_ID', factor_names)]
-EL_test %>% as.data.frame() %>% write_tsv(sgom_out_EL_test)
+}

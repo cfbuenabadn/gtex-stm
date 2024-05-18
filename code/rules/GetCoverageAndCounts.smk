@@ -4,23 +4,6 @@ def much_more_mem_after_first_attempt(wildcards, attempt):
     else:
         return 62000
 
-
-#rule GetBigWigs:
-#    input:
-#        bam = "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{Tissue}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
-#        bai = "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-#download/{Tissue}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.bai"
-#    output:
-#        "coverage/bigwigs/{Tissue}/{IndID}.bw"
-#    resources:
-#        mem_mb = 42000,
-#    log:
-#        "logs/bigwigs/{Tissue}.{IndID}.log"
-#    shell:
-#        """
-#        (bamCoverage -b {input.bam} -o {output}) &> {log}
-#        """
-
-
 rule GetBedsAndTabix:
     input:
         bam = "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{Tissue}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
@@ -73,7 +56,7 @@ rule MakeGeneCounts:
         get_bed_per_tissue,
         get_tbi_per_tissue
     output:
-        temp("coverage/counts_total/{gene}.csv.gz")
+        "coverage/counts_total/{gene}.csv.gz"
         #temp(expand("coverage/counts/{Tissue}/{{gene}}.csv.gz", Tissue=tissue_list))
     resources:
         mem_mb = 24000,
@@ -107,4 +90,23 @@ rule FilterCountTables:
         """
     
     
-        
+rule MakeGeneCounts_WholeGene:
+    input:
+        get_bed_per_tissue,
+        get_tbi_per_tissue
+    output:
+        "coverage/counts_whole_gene/{gene}.csv.gz"
+        #temp(expand("coverage/counts/{Tissue}/{{gene}}.csv.gz", Tissue=tissue_list))
+    resources:
+        mem_mb = 24000,
+    log:
+        "/scratch/midway3/cnajar/logs/counts_whole_gene/tissues.{gene}.log"
+    wildcard_constraints:
+        gene = '|'.join(selected_genes.gene),
+        #Tissue = '|'.join(tissue_list)
+    params:
+        tissues = ' '.join(tissue_list)
+    shell:
+        """
+        python scripts/prepare_counts_whole_gene.py {wildcards.gene} {params.tissues} &> {log}
+        """

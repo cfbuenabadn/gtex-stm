@@ -1,28 +1,31 @@
-import numpy as np
+import gzip
 import pandas as pd
-from gtfparse import read_gtf
-import argparse
-
-parser = argparse.ArgumentParser()
-
-parser.add_argument('--gtf', type=str, required=True)
-
-parser.add_argument('--output', type=str, required=True)
-
-parser.add_argument('--extension', type=int, required=True)
+import sys
 
 if __name__ == '__main__':
-    
-    args = parser.parse_args()
-    gtf_file = args.gtf
-    extension = int(args.extension)
-    output = args.output
+    arguments = sys.argv
+    input_gtf = arguments[1]
+    output_bed = arguments[2]
+    with open(input_gtf, 'r') as fh:
+        with gzip.open(output_bed, 'wb') as fh2:
+            header = ['#chrom', 'start', 'end', 'gene_id', 'transcript_id', 'strand', 'factors', 'exon']
+            header = ('\t'.join(header) + '\n').encode()
+            fh2.write(header)
+            for line in fh:
+                row = line.rstrip().split('\t')
+                if row[2] == "exon":
+                    chrom = row[0]
+                    start = row[3]
+                    end = row[4]
+                    strand = row[6]
+                    tags = row[8].split('"')
+                    gene_id = tags[1]
+                    transcript_id = tags[3]
+                    factors = tags[5]
+                    exon = tags[7]
         
-    gtf = read_gtf(gtf_file)
-    
-    gtf_select = gtf.loc[(gtf.gene_type == 'protein_coding')&(gtf.feature=='gene')&np.array([x[:3]=='chr' for x in gtf.seqname])]
-    gtf_bed = gtf_select[['seqname', 'start', 'end', 'gene_name']].copy()
-    gtf_bed.start += (-extension)
-    gtf_bed.end += extension
-    
-    gtf_bed.to_csv(output, sep='\t', index=False, header=False)
+                    out_row = [chrom, start, end, gene_id, transcript_id, strand, factors, exon]
+                    out_line = ('\t'.join(out_row) + '\n').encode()
+                    fh2.write(out_line)
+                
+# zcat snmf_exons.bed.gz | bedtools sort -i - | bgzip -c > snmf.exons.sorted.bed.gz

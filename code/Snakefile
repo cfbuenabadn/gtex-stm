@@ -13,6 +13,7 @@ include: "rules/GetCoverageAndCounts.smk"
 include: "rules/RunRMATS.smk"
 include: "rules/RunSleuth.smk"
 include: "rules/ProcessGREGoR.smk"
+include: "rules/isoforms.smk"
 
 localrules:
     all,

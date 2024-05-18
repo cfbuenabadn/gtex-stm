@@ -271,12 +271,15 @@ def main():
 
     print('get expressed')
     
-    df_expressed = get_expressed(suma_array, coords, coords_junc)
+    # df_expressed = get_expressed(suma_array, coords, coords_junc)
 
-    print(df_expressed.shape)
+    # print(df_expressed.shape)
     
-    selected_coords, coord_remove_list, long_introns = get_long_introns(df_expressed, coords)
+    # selected_coords, coord_remove_list, long_introns = get_long_introns(df_expressed, coords)
 
+    ## NOT REMOVING LONG INTRONS
+    selected_coords = coords
+    coord_remove_list = pd.Index([])
     
     overlap_bp = get_gene_overlaps(chrom, start, end, gene_id)
 
@@ -308,7 +311,7 @@ def main():
     X_length = len(suma_array)
     overlap_length = len(overlap_bp)
     new_length = len(selected_coords)
-    removed_sections = long_introns.shape[0]
+    removed_sections = 0 #long_introns.shape[0]
     removed_sum = np.sum(suma_array[removed_array])
     if not any(removed_array):
         print('nothing was removed')

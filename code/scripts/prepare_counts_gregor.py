@@ -4,42 +4,34 @@ import os
 import numpy as np
 import tabix
 import sys
+sys.path.append('/project2/mstephens/cfbuenabadn/gtex-stm/code/scripts')
+from prepare_counts import *
 
-def process_and_write(tissues, chrom, start, end, gene_name):
-    output_name = 'coverage/counts_total/' + gene_name + '.csv.gz'
+def process_and_write_gregor(dataset, chrom, start, end, gene_name):
+    output_name = f'gregor_data/{dataset}/counts/{gene_name}.csv.gz'
+    bedgraph_dir = f'gregor_data/{dataset}/splicing_data/bedgraph/'
     file_count = 1
     with gzip.open(output_name, 'wt', compresslevel=6) as fh:
-        for tissue in tissues:
-            print(tissue)
-            file_list = sorted(['coverage/bed/' + tissue + '/' + x for x in os.listdir('coverage/bed/' + tissue) if ('.tbi' not in x)])
-            
-            for file_name in file_list:
-                coord_str, counts_str = process_sample(tissue, file_name, chrom, start, end)
-                if file_count == 1:
-                    fh.write(coord_str)
-                fh.write(counts_str)
-                file_count += 1
+        
+        file_list = sorted([bedgraph_dir + x for x in os.listdir(bedgraph_dir) if (x[-2:]=='gz')])
+        
+        for file_name in file_list:
+            coord_str, counts_str = process_sample_gregor(dataset, file_name, chrom, start, end)
+            if file_count == 1:
+                fh.write(coord_str)
+            fh.write(counts_str)
+            file_count += 1
 
-def process_sample(tissue, file_name, chrom, start, end):
+def process_sample_gregor(tissue, file_name, chrom, start, end):
     sample_name = file_name.split('/')[-1].split('.')[0]
     chrom_for_tabix = chrom
     gene_df = tabix_dataframe(file_name, chrom_for_tabix, start, end)
-    coord_str, counts_str = get_counts_string(gene_df, sample_name, tissue, chrom, start, end)
+    coord_str, counts_str = get_counts_string_gregor(gene_df, sample_name, tissue, chrom, start, end)
     return coord_str, counts_str
 
-
-def tabix_dataframe(file_name, chrom, start, end):
-
-    tb = tabix.open(file_name)
-
-    records = tb.query(chrom, start, end)
-    gene_df = pd.DataFrame(records, columns = ['chrom', 'start', 'end', 'counts'])
-    return gene_df
-
-
-def get_counts_string(gene_df, sample_name, tissue, chrom, start, end):
+def get_counts_string_gregor(gene_df, sample_name, tissue, chrom, start, end):
     coord_list = ['Sample_ID']
-    sample_counts = [sample_name + '.' + tissue]
+    sample_counts = [sample_name]
     for i, (index, row) in enumerate(gene_df.iterrows()):
         start_ = int(row.start)
         end_ = int(row.end)
@@ -59,12 +51,11 @@ def get_counts_string(gene_df, sample_name, tissue, chrom, start, end):
     counts_str = ','.join(sample_counts)+'\n'
     
     return coord_str, counts_str
-
 if __name__ == '__main__':
 
     arguments = sys.argv
     gene_name = arguments[1]
-    tissues = arguments[2:]
+    dataset = arguments[2]
     
     selected_genes = pd.read_csv('../data/protein_coding_genes.bed.gz', sep='\t', #'../data/selected_genes.bed', sep='\t', 
                                  names = ['chrom', 'start', 'end', 'gene', 'gene_symbol', 'strand'])
@@ -75,7 +66,5 @@ if __name__ == '__main__':
     start = int(gene_bed.start.iloc[0]) - 50
     end = int(gene_bed.end.iloc[0]) + 50
 
-    # for tissue in tissues:
-    #     print('processing ' + tissue)
-    process_and_write(tissues, chrom, start, end, gene_name)
-        # print('finished!')
+    process_and_write_gregor(dataset, chrom, start, end, gene_name)
+    print('finished!')

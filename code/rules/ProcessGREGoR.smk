@@ -87,4 +87,31 @@ rule collect_gregor_juncs:
         #expand("gregor_data/sberger/processed_data/junction/{IndID}.junc.gz.tbi", IndID = gregor_samples),
         expand("gregor_data/sberger/splicing_data/bedgraph/{IndID}.bed.gz.tbi", IndID = gregor_samples)
 
+def get_samples_dataset_gregor(wildcards):
+    bedgraph_dir = f'/project2/mstephens/cfbuenabadn/gtex-stm/code/gregor_data/{wildcards.dataset}/splicing_data/bedgraph/'
+    samples = sorted([x for x in os.listdir(bedgraph_dir) if ((x[-2:]=='gz') or (x[-2:]=='tbi'))])
+    samples_files = expand(bedgraph_dir + '{sample}', sample = samples)
+    return samples_files
 
+rule MakeGeneCounts_Gregor:
+    input:
+        get_samples_dataset_gregor,
+    output:
+        "gregor_data/{dataset}/counts/{gene}.csv.gz"
+    resources:
+        mem_mb = 24000,
+    log:
+        "/scratch/midway3/cnajar/logs/counts_gregor/{dataset}.{gene}.log"
+    wildcard_constraints:
+        gene = '|'.join(selected_genes.gene),
+        dataset = 'sberger'
+    shell:
+        """
+        python scripts/prepare_counts_gregor.py {wildcards.gene} {wildcards.dataset} &> {log}
+        """
+
+rule collect_gregor:
+    input:
+        'gregor_data/sberger/counts/ENSG00000130821.csv.gz',
+        'gregor_data/sberger/counts/ENSG00000137992.csv.gz',
+        'gregor_data/sberger/counts/ENSG00000049618.csv.gz',

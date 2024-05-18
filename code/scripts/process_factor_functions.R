@@ -53,8 +53,8 @@ merge_isoforms <- function(isoforms){
                     frac_end_1 = last_exon_diff/(exon_len_iso[length_iso])
                     frac_end_2 = last_exon_diff/(exon_len_iso2[length_iso])
 
-                    first_exon_is_diff = ((first_exon_diff > 200) | (frac_start_1 > 0.2) | (frac_start_2 > 0.2))
-                    last_exon_is_diff = ((last_exon_diff > 200) | (frac_end_1 > 0.2) | (frac_end_2 > 0.2))
+                    first_exon_is_diff = ((first_exon_diff > 200) & ((frac_start_1 > 0.25) | (frac_start_2 > 0.25)))
+                    last_exon_is_diff = ((last_exon_diff > 200) & ((frac_end_1 > 0.25) | (frac_end_2 > 0.25)))
     
                
                     if ((suma_start == 0) & (suma_end == 0) & (! first_exon_is_diff) & (! last_exon_is_diff)){
@@ -78,8 +78,10 @@ merge_isoforms <- function(isoforms){
     return (isoform_list)
 }
 
+
 smooth_factor <- function(factor, cutoff_ = 0.25, smooth_fraction = 0.25, step_fraction = 10, exon_quant = 0.99, 
-                          cutoff_strict = 0.1, pos_window = 100) {
+                          cutoff_strict = 0.1, #cutoff_strict = 0.25,#cutoff_strict = 0.1, 
+                          pos_window = 100) {
   
   cutoff <- cutoff_
   factor <- factor / quantile(factor, exon_quant)
@@ -177,27 +179,45 @@ smooth_factor <- function(factor, cutoff_ = 0.25, smooth_fraction = 0.25, step_f
 }
 
 
-factor_lm <- function(factor){
+factor_lm <- function(factor, strand=NULL){
+
+    print('HELLOWALLS')
+    print(strand)
     x <- (1:length(factor))
     y <- as.vector(factor)
-    y <- y/quantile(y,0.95)
+    y <- y/quantile(y,0.99)
 
-    y_ <- y[y > 0.05]
-    x_ <- x[y > 0.05]
+    y_ <- y[y > 0.25]
+    x_ <- x[y > 0.25]
     model <- lm(y_~x_) %>% summary
     intercept <- model$coefficients[1,1]
     coef <- model$coefficients[2,1]
 
-    y_model <- (x*(coef))+intercept
-    
-    y_corrected <- y/pmax(y_model, 0.1)
+    print(coef)
 
-    return(y_corrected)
+    if (is.null(strand)) {
+
+        y_model <- (x*(coef))+intercept
+        
+        y_corrected <- y/pmax(y_model, 0.1)
+        y_corrected <- ifelse(y > 0.1, y_corrected, y)
+
+    } else {if (((strand == 'plus') & (coef > 0)) | ((strand=='minus') & (coef < 0))) {
+        print('HELLO WALLS')
+        print(coef)
+        y_model <- (x*(coef))+intercept
+        y_corrected <- y/pmax(y_model, 0.1)
+        y_corrected <- ifelse(y > 0.1, y_corrected, y)
+
+    } else {y_corrected = factor}
+
+    return(y_corrected)}
 }
 
-correct_factor <- function(factor, junctions_bed, coords, correct_bias=TRUE, smooth_fraction = 0.25){
-    if (correct_bias) {y <- factor_lm(factor)} else {y <- factor}
-    y <- y/quantile(y, 0.95)
+
+correct_factor <- function(factor, junctions_bed, coords, correct_bias=TRUE, smooth_fraction = 0.25, strand=NULL){
+    if (correct_bias) {y <- factor_lm(factor, strand)} else {y <- factor}
+    y <- y/quantile(y, 0.99)
     binary_y <- smooth_factor(pmin(y, 1), exon_quant=1, smooth_fraction = smooth_fraction) #smooth_factor(y_corrected)
     segments_df <- find_continuous_segments(coords, binary_y)
 
@@ -211,14 +231,15 @@ correct_factor <- function(factor, junctions_bed, coords, correct_bias=TRUE, smo
           params = "-wao"
           )
 
-    corrected_exons <- get_corrected_exons(segments_df, factor_junctions_bed, bed_intersection)
+    corrected_exons <- get_corrected_exons(segments_df, factor_junctions_bed, bed_intersection, junctions_bed)
 
     print(segments_df)
     return(corrected_exons)
 }
 }
 
-get_corrected_exons <- function(segments_df, factor_junctions_bed, bed_intersection){
+
+get_corrected_exons <- function(segments_df, factor_junctions_bed, bed_intersection, junctions_bed){
     corrected_exons <- data.frame(chrom = character(0), start = integer(0), end = integer(0))
     
     start_list <- c(segments_df$start[1])
@@ -231,6 +252,9 @@ get_corrected_exons <- function(segments_df, factor_junctions_bed, bed_intersect
     
         if (is.null(best_junction)){
             next
+        } else if (best_junction == 'gap') {
+             end_list <- c(end_list, as.integer(factor_junctions_bed$start[i]))
+            start_list <- c(start_list, as.integer(factor_junctions_bed$end[i]))
         } else{
         
         end_list <- c(end_list, (junctions_bed %>% filter(junc_names == best_junction) %>% pull(start)))
@@ -246,7 +270,8 @@ get_corrected_exons <- function(segments_df, factor_junctions_bed, bed_intersect
     return(corrected_exons)
 }
 
-get_isoforms <- function(EF, junctions_bed, coordinates, correct_bias=TRUE, smooth_fraction = 0.25){
+
+get_isoforms <- function(EF, junctions_bed, coordinates, correct_bias=TRUE, smooth_fraction = 0.25, strand=NULL){
     K <- (EF %>% dim())[2]
 
     EF <- EF[2:((EF %>% dim())[1]-1),] 
@@ -255,7 +280,7 @@ get_isoforms <- function(EF, junctions_bed, coordinates, correct_bias=TRUE, smoo
     
     isoforms <- list()
     for (k in 1:K){
-        isoform_k <- correct_factor(EF[,k], junctions_bed, coordinates, correct_bias=correct_bias, smooth_fraction = smooth_fraction)
+        isoform_k <- correct_factor(EF[,k], junctions_bed, coordinates, correct_bias=correct_bias, smooth_fraction = smooth_fraction, strand=strand)
         isoforms[[paste0('isoform_', k)]] <- isoform_k
         }
     return(isoforms)
@@ -290,8 +315,6 @@ find_continuous_segments <- function(idx, x) {
     segments_df <- rbind(segments_df, segment)
   }
   
-  #segments_df <- matrix(unlist(start_end_segments), ncol = 3, byrow = TRUE)
-  #colnames(segments_df) <- c("chrom", "start", "end")
   return(segments_df)
 }
 
@@ -312,6 +335,10 @@ find_best_junction <- function(bed_intersection_slice, gene_size=10000){
     gap_end <- as.integer(bed_intersection_slice$end)[1]
     gap_size <- (gap_end - gap_start)
     best_junc <- NULL
+    any_close <- FALSE
+    any_start_close <- FALSE
+    any_end_close <- FALSE
+    
 
     if (dim(bed_intersection_slice)[1] == 0) {
         if (gap_size >= gap_min_size){
@@ -344,6 +371,11 @@ find_best_junction <- function(bed_intersection_slice, gene_size=10000){
 
             # print(gap_percent)
 
+            if (start_close <= 100) {any_start_close <- TRUE}
+            if (end_close <= 100) {any_end_close <- TRUE}
+
+            if ((start_close <= 100) || (end_close <= 100)) {any_close <- TRUE}
+
             if ((start_close <= 100) && (end_close <= 100) && (gap_percent >= 0.75)){
 
                 if ((current_distance < best_distance) && (gap_percent > best_percent)){
@@ -355,8 +387,15 @@ find_best_junction <- function(bed_intersection_slice, gene_size=10000){
             
             }
     }
+
+    if (is.null(best_junc)){
+            if ((gap_size > 1000) && (any_close)) {best_junc <- 'gap'}
+            else if ((any_start_close) && (any_end_close)) {best_junc <- 'gap'}
+        }
+    
     return (best_junc)
     }
+
 
 run_tabix <- function(coords, junc_file, gene_id){
     coords_end <- (coords[length(coords)] %>% str_split(':'))[[1]][2]
@@ -370,9 +409,6 @@ run_tabix <- function(coords, junc_file, gene_id){
         }
         
     junctions_bed  <- junctions_bed %>% select(c('chrom', 'start', 'end', 'gene'))
-
-    #junctions_bed <- tabix(coords_tabix, junc_file) %>% 
-    #select(c('chrom', 'start', 'end', 'gene'))
 
     if (dim(junctions_bed)[1] == 0) { return(junctions_bed) }
     

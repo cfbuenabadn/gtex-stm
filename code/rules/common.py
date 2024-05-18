@@ -295,6 +295,7 @@ gregor_samples = list(gregor_samples.index)
 
 # # muscle_skeletal = muscle_skeletal_female_test.union(muscle_skeletal_train).union(muscle_skeletal_test)
 
-
+with open('../data/whole_genes.txt', 'r') as fh:
+    whole_genes = [x.rstrip() for x in fh.readlines()]
 
 

@@ -3,7 +3,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 import os
 import subprocess as sp
-from tqdm import tqdm 
+# from tqdm import tqdm 
 import gtfparse
 
 import seaborn as sns
@@ -215,3 +215,44 @@ def plot_gene(EF, gtf_df, gene, K, title=None):
 
     PlotGene(gtf_exons, plot_cds=False, collapse_transcripts=False, plot_nmd=True, ax=ax[nrows-1])
     ax[nrows-1].set_xlim(ax[0].get_xlim())
+
+
+def plot_gene_isoforms(isoforms_dict, coordinates, color_list = None, axes=None):
+    xlim1 = int(coordinates[0].split(':')[1])
+    xlim2 = int(coordinates[-1].split(':')[1])
+
+    if color_list is None:
+        color_list = sns.color_palette("tab10")
+
+    K = len(isoforms_dict)
+
+    if axes is None:
+        fig, axes = plt.subplots(K, 1, figsize=(20, 3))
+
+    for i in range(K):
+        isoform_df = isoforms_dict[f'isoform_{str(i+1)}']['df']
+        ax = axes[i]
+        color = color_list[i]
+        plot_isoform(isoform_df, ax, color, xlim1, xlim2)
+        
+
+def plot_isoform(isoform_df, ax, color, xlim1, xlim2):
+    is_first = True
+    for idx, row in isoform_df.iterrows():
+        start = int(row.start)
+        end = int(row.end)
+        if is_first:
+            first = end
+            is_first = False
+    
+        ax.fill_between([start, end], [0, 0], [1, 1], color = color, zorder=2)
+    
+    ax.plot([first, start], [0.5, 0.5], c=color, linewidth=5)
+
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.spines[['bottom', 'top', 'right', 'left']].set_visible(False)
+    ax.set_xlim([xlim1, xlim2])
+
+
+gene = 'ENSG00000112081'

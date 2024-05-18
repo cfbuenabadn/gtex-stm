@@ -6,7 +6,7 @@ import tabix
 import sys
 
 def process_and_write(tissues, chrom, start, end, gene_name):
-    output_name = 'coverage/counts_total/' + gene_name + '.csv.gz'
+    output_name = 'coverage/counts_whole_gene/' + gene_name + '.csv.gz'
     file_count = 1
     with gzip.open(output_name, 'wt', compresslevel=6) as fh:
         for tissue in tissues:
@@ -66,14 +66,14 @@ if __name__ == '__main__':
     gene_name = arguments[1]
     tissues = arguments[2:]
     
-    selected_genes = pd.read_csv('../data/protein_coding_genes.bed.gz', sep='\t', #'../data/selected_genes.bed', sep='\t', 
-                                 names = ['chrom', 'start', 'end', 'gene', 'gene_symbol', 'strand'])
+    selected_genes = pd.read_csv("Annotations/gencode.v44.primary_assembly.genes.bed.gz", sep='\t', #'../data/selected_genes.bed', sep='\t', 
+                                 names = ['chrom', 'start', 'end', 'gene', 'gene_symbol', 'strand'], skiprows=1)
     
     gene_bed = selected_genes.loc[selected_genes.gene==gene_name]
     print(gene_bed)
     chrom = str(gene_bed.chrom.iloc[0])
-    start = int(gene_bed.start.iloc[0]) - 50
-    end = int(gene_bed.end.iloc[0]) + 50
+    start = int(gene_bed.start.iloc[0]) - 200
+    end = int(gene_bed.end.iloc[0]) + 200
 
     # for tissue in tissues:
     #     print('processing ' + tissue)

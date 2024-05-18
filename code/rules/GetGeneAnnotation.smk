@@ -32,7 +32,7 @@ rule GetAnnotatedGenes:
         "logs/leafcutter/gene_annotation.primary_assembly.log"
     shell:
         """
-        (awk '($3=="gene" && ($1 ~ /^chr/)) {{print $1, $4, $5, $10, $12, $7}}' OFS="\\t" {input} |  awk -F'[\\t"\.]' '{{print $1, $2, $3, $5, $9, $11}}' OFS='\\t' - | bedtools sort -i - | awk 'BEGIN {{print "#chrom\\tstart\\tend\\tgene_id\\tgene_type\\tstrand"}} {{print}}'  FS="\\t" OFS="\\t" - >> Annotations/gencode.v44.primary_assembly.genes.bed) &> {log};
+        (grep "protein_coding" {input} | awk '($3=="gene" && ($1 ~ /^chr/)) {{print $1, $4, $5, $10, $14, $7}}' OFS="\\t" - |  awk -F'[\\t"\.]' '{{print $1, $2, $3, $5, $9, $11}}' OFS='\\t' - | bedtools sort -i - | awk 'BEGIN {{print "#chrom\\tstart\\tend\\tgene_id\\tgene_type\\tstrand"}} {{print}}'  FS="\\t" OFS="\\t" - >> Annotations/gencode.v44.primary_assembly.genes.bed) &> {log};
         (bgzip Annotations/gencode.v44.primary_assembly.genes.bed) &>> {log};
         (tabix -p bed {output.bed}) &>> {log};
         """
