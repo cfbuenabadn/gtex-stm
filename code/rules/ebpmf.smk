@@ -251,3 +251,46 @@ rule ebpmf_run_whole_gene:
         """
         {config[Rscript]} scripts/run_ebpmf_whole_gene.R {wildcards.gene} {params.strand} &> {log}
         """
+
+rule collect_single_tissue_EL:
+    output:
+        'ebpmf_models/single_tissue/tables/BA9.EL.bed.gz',
+        'ebpmf_models/single_tissue/tables/WB.EL.bed.gz',
+        'ebpmf_models/single_tissue/tables/MS.EL.bed.gz',
+        'ebpmf_models/single_tissue/tables/Skin.EL.bed.gz'
+    log:
+        '/scratch/midway3/cnajar/logs/collect_single_tissue_EL.log'
+    resources:
+        mem_mb = 24000
+    shell:
+        """
+        python scripts/collect_single_tissue_EL.py &> {log}
+        """
+
+rule collect_multitissue_EL:
+    output:
+        'ebpmf_models/filtered/snmf_2/tables/EL.bed.gz',
+        'ebpmf_models/filtered/snmf_3/tables/EL.bed.gz',
+        'ebpmf_models/filtered/snmf_4/tables/EL.bed.gz',
+        'ebpmf_models/filtered/snmf_5/tables/EL.bed.gz',
+        'ebpmf_models/filtered/snmf_10/tables/EL.bed.gz'
+    log:
+        '/scratch/midway3/cnajar/logs/collect_multitissue_EL.log'
+    resources:
+        mem_mb = 24000
+    shell:
+        """
+        python scripts/collect_loadings_tables.py &> {log}
+        """
+
+rule collect_EL:
+    input:
+        'ebpmf_models/single_tissue/tables/BA9.EL.bed.gz',
+        'ebpmf_models/single_tissue/tables/WB.EL.bed.gz',
+        'ebpmf_models/single_tissue/tables/MS.EL.bed.gz',
+        'ebpmf_models/single_tissue/tables/Skin.EL.bed.gz',
+        'ebpmf_models/filtered/snmf_2/tables/EL.bed.gz',
+        'ebpmf_models/filtered/snmf_3/tables/EL.bed.gz',
+        'ebpmf_models/filtered/snmf_4/tables/EL.bed.gz',
+        'ebpmf_models/filtered/snmf_5/tables/EL.bed.gz',
+        'ebpmf_models/filtered/snmf_10/tables/EL.bed.gz'

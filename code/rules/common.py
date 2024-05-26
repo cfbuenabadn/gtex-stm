@@ -298,4 +298,26 @@ gregor_samples = list(gregor_samples.index)
 with open('../data/whole_genes.txt', 'r') as fh:
     whole_genes = [x.rstrip() for x in fh.readlines()]
 
+tissue_sub_list = sorted(['Brain_Anterior_cingulate_cortex_BA24',
+                      'Brain_Cortex',
+                      'Brain_Frontal_Cortex_BA9',
+                      'Brain_Putamen_basal_ganglia',
+                      'Skin_Not_Sun_Exposed_Suprapubic',
+                      'Liver',
+                      'Lung', 
+                      'Heart_Atrial_Appendage', 
+                      'Muscle_Skeletal',
+                      'Whole_Blood'])
+qqnorm_output = []
+for tissue_ in tissue_sub_list:
+    for k in [2, 3, 4, 5, 10]:
+        qqnorm_output.append(f'QTLs/{tissue_}/multi_tissue.snmf_{str(k)}.qqnorm.bed.gz')
 
+for tissue_ in ['Brain_Frontal_Cortex_BA9', 'Muscle_Skeletal', 'Whole_Blood', 'Skin_Not_Sun_Exposed_Suprapubic']:
+    qqnorm_output.append(f'QTLs/{tissue_}/single_tissue.snmf_3.qqnorm.bed.gz')
+
+def much_more_mem_after_first_attempt(wildcards, attempt):
+    if int(attempt) == 1:
+        return 4000
+    else:
+        return 52000

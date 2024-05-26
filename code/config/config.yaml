@@ -10,3 +10,4 @@ Rscript: "/software/R-4.1.0-el7-x86_64/bin/Rscript" #"/software/R-4.1.0-el8-x86_
 python: "/project2/mstephens/cfbuenabadn/anaconda3/bin/python"
 picard: "/software/picard-2.21.8-el7-x86_64/bin/picard.jar"
 kallisto: '/project2/mstephens/cfbuenabadn/software/kallisto/bin/kallisto'
+QTLtools: "scripts/QTLtools"
