@@ -150,7 +150,7 @@ if ((nbases_total > 15000) & (nbases_total < 60000)){
 ##########################################################################
 
 
-samples <- read_tsv('config/samples.tsv') %>%
+samples <- read_tsv('config/samples.tsv', col_names = c('X1', 'tissue_id', 'sex', 'group'), skip=1) %>%
     column_to_rownames(var = "X1") %>%
     filter((group=='train') & (tissue_id %in% tissues)) 
 

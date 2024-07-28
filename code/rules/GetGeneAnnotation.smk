@@ -78,6 +78,24 @@ rule GetAllAnnotatedExons:
         (awk '$3=="exon" && ($1 ~ /^chr/)'  OFS='\\t' {input} | awk -F'[\\t"]' '{{print $1, $4, $5, $10, $16, $7, $14, $12, $18}}' OFS='\\t' - | awk 'BEGIN {{OFS="\\t"}} {{gsub(/\..*/, "", $4); gsub(/\..*/, "", $8); print}}' - | bedtools sort -i - | awk 'BEGIN {{print "#chrom\\tstart\\tend\\tgene_id\\tgene_name\\tstrand\\tgene_type\\ttranscript_id\\ttranscript_type"}} {{print}}'  FS="\\t" OFS="\\t" - | bgzip -c - > {output.bed}) &> {log};
         (tabix -p bed {output.bed}) &>> {log};
         """
+
+
+
+rule Get_expressed_AnnotatedExons:
+    input:
+        "Annotations/gencode.v44.primary_assembly.annotation.gtf"
+    output:
+        bed = "Annotations/gencode.v44.primary_assembly.protein_coding_exons.bed.gz",
+        tbi = "Annotations/gencode.v44.primary_assembly.protein_coding_exons.bed.gz.tbi"
+    log:
+        "logs/leafcutter/exon_annotation.primary_assembly.log"
+    shell:
+        """
+        (awk '$3=="exon" && ($1 ~ /^chr/)'  OFS='\\t' {input} | grep protein_coding - | awk -F'[\\t"]' '{{print $1, $4, $5, $10, $16, $7, $14, $12, $18}}' OFS='\\t' - | awk 'BEGIN {{OFS="\\t"}} {{gsub(/\..*/, "", $4); gsub(/\..*/, "", $8); print}}' - | bedtools sort -i - | awk 'BEGIN {{print "#chrom\\tstart\\tend\\tgene_id\\tgene_name\\tstrand\\tgene_type\\ttranscript_id\\ttranscript_type"}} {{print}}'  FS="\\t" OFS="\\t" - | bgzip -c - > {output.bed}) &> {log};
+        (tabix -p bed {output.bed}) &>> {log};
+        """
+
+
         
 rule DownloadTranscriptome:
     output:
@@ -102,3 +120,35 @@ rule DownloadTranscriptome:
 #        awk '$3=="gene"' {input} | awk -F'[\\t"]' '{{print $14, $10, $1":"$4-50"-"$5+50}}' OFS='\\t' | gzip - > {output}
 #        #python scripts/gtf2bed.py --gtf {input} --extension {params.extension} --output {output} &> {log}
 #        """
+
+
+rule GetAnnotated_protein_coding_genes:
+    input:
+        "Annotations/gencode.v44.primary_assembly.annotation.gtf"
+    output:
+        bed = "Annotations/gencode.v44.primary_assembly.protein_coding.genes.bed.gz",
+        tbi = "Annotations/gencode.v44.primary_assembly.protein_coding.genes.bed.gz.tbi"
+    log:
+        "logs/leafcutter/gene_annotation.primary_assembly.protein_coding.log"
+    shell:
+        """
+        (grep "protein_coding" {input} | awk '($3=="gene" && ($1 ~ /^chr/)) {{print $1, $4, $5, $10, $14, $7}}' OFS="\\t" - |  awk -F'[\\t"\.]' '{{print $1, $2, $3, $5, $9, $11}}' OFS='\\t' - | bedtools sort -i - | awk 'BEGIN {{print "#Chr\\tstart\\tend\\tgene_id\\tgene_name\\tstrand"}} {{print}}'  FS="\\t" OFS="\\t" - >> Annotations/gencode.v44.primary_assembly.protein_coding.genes.bed) &> {log};
+        (bgzip Annotations/gencode.v44.primary_assembly.protein_coding.genes.bed) &>> {log};
+        (tabix -p bed {output.bed}) &>> {log};
+        """
+
+
+rule GetAnnotated_protein_coding_genes_mane_select:
+    input:
+        "Annotations/gencode.v44.primary_assembly.annotation.gtf"
+    output:
+        bed = "Annotations/gencode.v44.primary_assembly.mane_select.genes.bed.gz",
+        tbi = "Annotations/gencode.v44.primary_assembly.mane_select.genes.bed.gz.tbi"
+    log:
+        "logs/leafcutter/gene_annotation.primary_assembly.protein_coding.log"
+    shell:
+        """
+        (grep "protein_coding" {input} | grep MANE_Select - | awk '($3=="gene" && ($1 ~ /^chr/)) {{print $1, $4, $5, $10, $14, $7}}' OFS="\\t" - |  awk -F'[\\t"\.]' '{{print $1, $2, $3, $5, $9, $11}}' OFS='\\t' - | bedtools sort -i - | awk 'BEGIN {{print "#Chr\\tstart\\tend\\tgene_id\\tgene_name\\tstrand"}} {{print}}'  FS="\\t" OFS="\\t" - >> Annotations/gencode.v44.primary_assembly.protein_coding.genes.bed) &> {log};
+        (bgzip Annotations/gencode.v44.primary_assembly.protein_coding.genes.bed) &>> {log};
+        (tabix -p bed {output.bed}) &>> {log};
+        """

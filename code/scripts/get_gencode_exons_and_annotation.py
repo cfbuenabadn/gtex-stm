@@ -1,4 +1,7 @@
 import gtfparse
+import polars as pl
+import pandas as pd
+import gzip
 
 def get_tags(x):
     row_tags = []
@@ -31,6 +34,8 @@ def process_row(row):
     transcript_id = str(row.transcript_id).split('.')[0]
     strand = str(row.strand)
 
+    transcript_type = str(row.transcript_type)
+
     exon_id = str(row.exon_id).split('.')[0]
     transcript_support = str(row.transcript_support_level)
     if transcript_support in ['NA', '']:
@@ -42,7 +47,7 @@ def process_row(row):
     row_tags = get_tags(tags)
     row_tags = '\t'.join(row_tags)
 
-    bed_row = [chrom, start, end, gene_id, transcript_id, strand, exon_id, transcript_support, row_tags]
+    bed_row = [chrom, start, end, gene_id, transcript_id, strand, exon_id, transcript_support, row_tags, transcript_type]
     bed_line = '\t'.join(bed_row) + '\n'#.encode()
     return bed_line
 
@@ -57,12 +62,12 @@ if __name__ == '__main__':
     
     gtf_exons = gtf_df.loc[(gtf_df.feature == 'exon') & (gtf_df.gene_type == 'protein_coding')]
     
-    with gzip.open('Annotations/gencode.v44.primary_assembly.exons.bed.gz', 'wb') as fh:
+    with gzip.open('Annotations/gencode.v44.primary_assembly.exons_annotation.bed.gz', 'wb') as fh:
         header = ['#chrom', 'start', 'end', 'gene_id', 'transcript_id', 'strand', 'exon_id', 
-                  'transcript_support_level', 'basic', 'Ensembl_canonical', 'MANE_Select', 'appris']
+                  'transcript_support_level', 'basic', 'Ensembl_canonical', 'MANE_Select', 'appris', 'transcript_type']
         header = ('\t'.join(header) + '\n').encode()
         fh.write(header)
-        for idx, row in tqdm(gtf_exons.iterrows(), leave=True, position=0):
+        for idx, row in gtf_exons.iterrows():
             exon_line = process_row(row)
             if exon_line[:3] == 'chr':
                 exon_line = exon_line.encode()

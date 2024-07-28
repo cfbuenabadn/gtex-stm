@@ -15,6 +15,11 @@ include: "rules/RunSleuth.smk"
 include: "rules/ProcessGREGoR.smk"
 include: "rules/isoforms.smk"
 include: "rules/QTLs.smk"
+include: "rules/CalculatePi1.smk"
+include: "rules/ProcessGaoData.smk"
+include: "rules/ProcessGWAS.smk"
+include: "rules/ColocPrep.smk"
+include: "rules/CoveragePlots.smk"
 
 localrules:
     all,

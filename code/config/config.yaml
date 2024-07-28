@@ -2,6 +2,8 @@
 # In case of sample based data, it should be complemented by a samples.tsv file that contains
 # one row per sample. It can be parsed easily via pandas.
 
+scratch: "/scratch/midway2/cnajar/"
+
 samples: config/samples.tsv
 
 rMATS: "/home/cnajar/rmats-turbo/rmats.py"
@@ -11,3 +13,5 @@ python: "/project2/mstephens/cfbuenabadn/anaconda3/bin/python"
 picard: "/software/picard-2.21.8-el7-x86_64/bin/picard.jar"
 kallisto: '/project2/mstephens/cfbuenabadn/software/kallisto/bin/kallisto'
 QTLtools: "scripts/QTLtools"
+
+gwas_coloc_chunks: 10

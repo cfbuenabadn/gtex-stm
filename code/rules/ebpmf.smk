@@ -137,7 +137,7 @@ rule ebpmf_run_filtered:
     log:
         '/scratch/midway3/cnajar/logs/ebpmf_run/{gene}.log'
     resources:
-        mem_mb = 62000,
+        mem_mb = 48000,
     wildcard_constraints:
         gene = '|'.join(list(selected_genes.gene)),
     params:
@@ -167,7 +167,7 @@ rule ebpmf_run_single_tissue:
 
 rule collect_ebpmf_filtered:
     input:
-        expand('ebpmf_models/filtered/RDS/{gene}.rds', gene = list(selected_genes.gene)[:3500])
+        expand('ebpmf_models/filtered/RDS/{gene}.rds', gene = list(selected_genes.gene)[10500:])
 
 rule collect_ebpmf_single_tissue:
     input:
@@ -242,7 +242,7 @@ rule ebpmf_run_whole_gene:
     log:
         '/scratch/midway3/cnajar/logs/ebpmf_run_whole_gene/{gene}.log'
     resources:
-        mem_mb = 62000,
+        mem_mb = 48000,
     wildcard_constraints:
         gene = '|'.join(list(selected_genes.gene)),
     params:
@@ -294,3 +294,8 @@ rule collect_EL:
         'ebpmf_models/filtered/snmf_4/tables/EL.bed.gz',
         'ebpmf_models/filtered/snmf_5/tables/EL.bed.gz',
         'ebpmf_models/filtered/snmf_10/tables/EL.bed.gz'
+
+
+rule collect_whole_genes_figure2:
+    input:
+        expand('ebpmf_models/whole_gene/RDS/{gene}.rds', gene = ['ENSG00000160131', 'ENSG00000125744', 'ENSG00000130821', 'ENSG00000137992', 'ENSG00000049618'])

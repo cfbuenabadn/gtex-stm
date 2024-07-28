@@ -140,7 +140,7 @@ def merge_EL(EL, merged_isoforms):
     
     return EL_merged
 
-def process_gene(gene, samples, gtf_fh, correct_bias, K=K):#, eta_fh, pvals_fh, H_fh, kw_pvals_fh):
+def process_gene(gene, samples, gtf_fh, correct_bias, K):#, eta_fh, pvals_fh, H_fh, kw_pvals_fh):
     rds = load_ebpmf_gene(gene)
     if 'strand' not in rds['rds'].keys():
         return None
@@ -156,7 +156,7 @@ def process_gene(gene, samples, gtf_fh, correct_bias, K=K):#, eta_fh, pvals_fh, 
     coords_all = list(rds['rds']['coords'])
     coords = list(rds['rds'][f'ebpmf_{str(K)}']['coords'])
     isoforms = get_isoforms(rds['rds'][f'ebpmf_{str(K)}']['train_fit']['EF_smooth'], junctions_bed, coords, coords_all, binary_fraction=0.5, 
-                            correct_bias = correct_bias)
+                            correct_bias = correct_bias, print_gene = gene)
     merged_isoforms = merge_isoforms(isoforms)
 
     gene_gtf = write_gtf(merged_isoforms, gene, strand)

@@ -112,6 +112,5 @@ rule MakeGeneCounts_Gregor:
 
 rule collect_gregor:
     input:
-        'gregor_data/sberger/counts/ENSG00000130821.csv.gz',
-        'gregor_data/sberger/counts/ENSG00000137992.csv.gz',
-        'gregor_data/sberger/counts/ENSG00000049618.csv.gz',
+        expand('gregor_data/sberger/counts/{gene}.csv.gz', gene = selected_genes.gene)
+

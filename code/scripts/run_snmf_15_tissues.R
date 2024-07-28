@@ -14,12 +14,12 @@ library(Matrix)
 
 Sys.setenv(VROOM_CONNECTION_SIZE=5000720)
 
-
 source('/project2/mstephens/cfbuenabadn/gtex-stm/code/scripts/process_factor_functions.R')
 
 args = commandArgs(trailingOnly=TRUE)
 gene_name = args[1]
 strand = as.character(args[2])
+pass = args[3]
 
 print(strand)
 print(strand == 'plus')
@@ -43,7 +43,7 @@ run_ebpmf <- function(counts, K) {
     ebpmf_out <- tryCatch(
         {
         lib_size <- rowSums(counts) %>% as.integer()
-        set.seed(123)
+        set.seed(1)
         fit = ebpmf.alpha::ebpmf_identity(as.matrix(counts),K, lib_size=lib_size)
     
         ebpmf_out <- list(EF = fit$EF,
@@ -64,18 +64,23 @@ run_ebpmf <- function(counts, K) {
     }
 
 
-tissues <- c('Brain_Anterior_cingulate_cortex_BA24', 
+tissues <- c('Adipose_Subcutaneous',  
+             'Brain_Anterior_cingulate_cortex_BA24', 
              'Brain_Cortex', 
              'Brain_Frontal_Cortex_BA9', 
              'Brain_Putamen_basal_ganglia', 
+             'Breast_Mammary_Tissue',
              'Heart_Atrial_Appendage', 
+             'Heart_Left_Ventricle', 
              'Liver', 
              'Lung', 
              'Muscle_Skeletal', 
              'Skin_Not_Sun_Exposed_Suprapubic', 
+             'Skin_Sun_Exposed_Lower_leg', 
+             'Testis',
              'Whole_Blood')
 
-counts <- paste0("coverage/counts_whole_gene/", gene_name, ".csv.gz") %>%
+counts <- paste0("coverage/counts_", pass, "/", gene_name, ".csv.gz") %>%
     read_csv() %>%
     column_to_rownames(var = "Sample_ID") 
 
@@ -102,7 +107,7 @@ counts <- counts[rowSums(counts) >= 100, ]
 kept_samples <- (counts %>% dim())[1]
 
 if (kept_samples < 50){
-    out_rds <- paste0('ebpmf_models/whole_gene/RDS/', gene_name, '.rds')
+    out_rds <- paste0('ebpmf_models/', pass, '/RDS/', gene_name, '.rds')
 
     saveRDS(list(gene=gene_name,
                  coords = coords,
@@ -137,20 +142,30 @@ group_matrix <- function(df, k = 10){
 }
 
 
+
 nbases_total <- dim(counts)[2] ### CHANGED
 
-if ((nbases_total > 15000) & (nbases_total < 60000)){
+if ((nbases_total > 15000) & (nbases_total <= 60000)){
     print('warning: matrix is too big; merging groups of 3 base pairs to reduce size.')
     counts <- counts %>% group_matrix(., 3)
-} else if (nbases_total > 60000){
+} else if ((nbases_total > 60000) & (nbases_total <= 120000)){
     print('warning: matrix is too big; merging groups of 9 base pairs to reduce size.')
-    counts <- counts %>% group_matrix(., 9)
+    counts <- counts %>% group_matrix(., 6)
+} else if ((nbases_total > 120000) & (nbases_total <= 240000)){
+    print('warning: matrix is too big; merging groups of 9 base pairs to reduce size.')
+    counts <- counts %>% group_matrix(., 12)
+} else if ((nbases_total > 240000) & (nbases_total <= 1000000)){
+    print('warning: matrix is too big; merging groups of 9 base pairs to reduce size.')
+    counts <- counts %>% group_matrix(., 50)
+} else if (nbases_total > 1000000){
+    print('warning: matrix is too big; merging groups of 9 base pairs to reduce size.')
+    counts <- counts %>% group_matrix(., 100)
 }
 
 ##########################################################################
 
 
-samples <- read_tsv('config/samples.tsv', col_names = c('X1', 'tissue_id', 'sex', 'group'), skip=1) %>%
+samples <- read_tsv('config/samples_extended.tsv', col_names = c('X1', 'tissue_id', 'sex', 'group'), skip=1) %>%
     column_to_rownames(var = "X1") %>%
     filter((group=='train') & (tissue_id %in% tissues)) 
 
@@ -192,12 +207,9 @@ train_and_test_ebpmf <- function(counts, train_samples, K, junctions_bed, coords
     }
 
 
-print('hola 2')
-ebpmf_2 <- train_and_test_ebpmf(counts, rownames(samples), 2, junctions_bed, coords, strand)
+
 print('hola 3')
 ebpmf_3 <- train_and_test_ebpmf(counts, rownames(samples), 3, junctions_bed, coords, strand)
-print('hola 4')
-ebpmf_4 <- train_and_test_ebpmf(counts, rownames(samples), 4, junctions_bed, coords, strand)
 print('hola 5')
 ebpmf_5 <- train_and_test_ebpmf(counts, rownames(samples), 5, junctions_bed, coords, strand)
 print('hola 10')
@@ -208,22 +220,21 @@ nbases <- dim(counts)[2]
 
 print('hola final')
 
-out_rds <- paste0('ebpmf_models/whole_gene/RDS/', gene_name, '.rds')
+out_rds <- paste0('ebpmf_models/', pass, '/RDS/', gene_name, '.rds')
 
 train_samples = rownames(samples)
 test_samples = rownames(counts)[!(rownames(counts) %in% train_samples)]
 print('hola save')
 
 saveRDS(list(gene=gene_name,
-             ebpmf_2 = ebpmf_2,
              ebpmf_3 = ebpmf_3,
-             ebpmf_4 = ebpmf_4,
              ebpmf_5 = ebpmf_5,
              ebpmf_10 = ebpmf_10,
              coords = coords,
-             train_samples = train_samples,
-             test_samples = test_samples,
-             strand = strand
+             pre_filtered_train_samples = train_samples,
+             pre_filtered_test_samples = test_samples,
+             strand = strand#,
+             #subset_fit = subset_fit
             ),
         file=out_rds
        )

@@ -1,0 +1,55 @@
+Trait	Author	Accession	PubMed_ID	Assembly	http_link
+Alzheimer disease - late onset	Wightman DP	GCST013196	34493870	GRCh37	https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST013001-GCST014000/GCST013196/GCST013196.tsv.gz
+Alzheimer disease	Bellenguez C	GCST90027158	35379992	GRCh38	https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST90027001-GCST90028000/GCST90027158/GCST90027158_buildGRCh38.tsv.gz
+Parkinson disease	Nalls MA	GCST009325	31701892	GRCh37	https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST009001-GCST010000/GCST009325/GCST009325.tsv
+Cerebrospinal fluid p-tau levels	Jansen IE	GCST90129600	36066633	GRCh38	https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST90129001-GCST90130000/GCST90129600/GCST90129600_buildGRCh38.tsv
+Cerebrospinal fluid p-tau levels in abnormal amyloid levels	Jansen IE	GCST90134630	36066633	GRCh38	https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST90134001-GCST90135000/GCST90134630/GCST90134630_buildGRCh38.tsv.gz
+Cerebrospinal fluid p-tau levels in APOE e4 non-carriers	Jansen IE	GCST90134631	36066633	GRCh38	https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST90134001-GCST90135000/GCST90134631/GCST90134631_buildGRCh38.tsv.gz
+Cerebrospinal fluid p-tau levels in APOE e4 carriers	Jansen IE	GCST90134632	36066633	GRCh38	https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST90134001-GCST90135000/GCST90134632/GCST90134632_buildGRCh38.tsv.gz
+Cerebrospinal fluid p-tau levels in normal amyloid levels	Jansen IE	GCST90134633	36066633	GRCh38	https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST90134001-GCST90135000/GCST90134633/GCST90134633_buildGRCh38.tsv.gz
+Tau protein presence in Body fluid	Dennis JK	GCST90012754	33441150	GRCh37	https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST90012001-GCST90013000/GCST90012754/GCST90012754_buildGRCh37.tsv.gz
+Circulating levels of total-tau	Sarnowski C	GCST90095138	35396452	GRCh37	https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST90095001-GCST90096000/GCST90095138/GCST90095138_buildGRCh37.tsv.gz
+Amyotrophic lateral sclerosis	van Rheenen W	GCST90027164	34873335	GRCh37	https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST90027001-GCST90028000/GCST90027164/GCST90027164_buildGRCh37.tsv.gz
+Cerebral aneurysm	Sakaue S	GCST90018815	34594039	GRCh37	https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST90018001-GCST90019000/GCST90018815/GCST90018815_buildGRCh37.tsv.gz
+Cerebral infarction	Backman JD	GCST90080034	34662886	GRCh38	https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST90080001-GCST90081000/GCST90080034/GCST90080034_buildGRCh38.tsv.gz
+Ischemic stroke	Mishra A	GCST90104540	36180795	GRCh37	https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST90104001-GCST90105000/GCST90104540/GCST90104540_buildGRCh37.tsv.gz
+Total cerebral volume	Tissink E	GCST90105076	35842455	GRCh37	https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST90105001-GCST90106000/GCST90105076/GCST90105076_buildGRCh37.tsv.gz
+Genetic generalized epilepsy	Consortium on Complex Epilepsies	GCST90271609	37653029	unknown	https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST90271001-GCST90272000/GCST90271609/GCST90271609.tsv.gz
+Migraine	Choquet H	GCST90000016	34294844	GRCh37	https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST90000001-GCST90001000/GCST90000016/GCST90000016_buildGRCh37.tsv
+Multiple sclerosis	Beecham AH	GCST005531	24076602	GRCh37	https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST005001-GCST006000/GCST005531/harmonised/24076602-GCST005531-EFO_0003885-Build37.f.tsv.gz
+Epilepsy	Consortium on Complex Epilepsies	GCST90271608	37653029	unknown	https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST90271001-GCST90272000/GCST90271608/GCST90271608.tsv.gz
+Childhood absence epilepsy	Consortium on Complex Epilepsies	GCST90271616	37653029	unknown	https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST90271001-GCST90272000/GCST90271616/GCST90271616.tsv.gz
+Cardioembolic stroke	Mishra A	GCST90104541	36180795	GRCh37	https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST90104001-GCST90105000/GCST90104541/GCST90104541_buildGRCh37.tsv.gz
+Small vessel stroke	Mishra A	GCST90104543	36180795	GRCh37	https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST90104001-GCST90105000/GCST90104543/GCST90104543_buildGRCh37.tsv.gz
+Large artery stroke	Mishra A	GCST90104542	36180795	GRCh37	https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST90104001-GCST90105000/GCST90104542/GCST90104542_buildGRCh37.tsv.gz
+Stroke	Mishra A	GCST90104539	36180795	GRCh37	https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST90104001-GCST90105000/GCST90104539/GCST90104539_buildGRCh37.tsv.gz
+Ischemic stroke - small vessel	Malik R	GCST005841	29531354	GRCh37	https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST005001-GCST006000/GCST005841/harmonised/29531354-GCST005841-EFO_1001504-build37.f.tsv.gz
+Lacunar stroke	Traylor M	GCST90014122	33773637	GRCh37	https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST90014001-GCST90015000/GCST90014122/GCST90014122_buildGRCh37.tsv
+Intracerebral hemorrhage	Sakaue S	GCST90018870	34594039	GRCh37	https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST90018001-GCST90019000/GCST90018870/GCST90018870_buildGRCh37.tsv.gz
+Schizophrenia	Trubetskoy	scz2022	35396580	https://doi.org/10.6084/m9.figshare.19426775|PGC3_SCZ_wave3.european.autosome.public.v3.vcf.tsv.gz
+ADHD	Demontis D	adhd2022	36702997	GRCh37	https://doi.org/10.6084/m9.figshare.22564390|ADHD2022_iPSYCH_deCODE_PGC.meta.gz
+Autism spectrum disorder	Grove J	asd2019	30804558	GRCh37	https://doi.org/10.6084/m9.figshare.14671989|iPSYCH-PGC_ASD_Nov2017.gz
+Panic disorder	Forstner AJ	panic2019	31712720	GRCh37	https://doi.org/10.6084/m9.figshare.16602218|pgc-panic2019.vcf.tsv.gz
+Bipolar disorder	Mullins N	bip2021	34002096	GRCh37	https://doi.org/10.6084/m9.figshare.14102594|pgc-bip2021-all.vcf.tsv.gz
+Major depression	Guintivano J	ppd2023	37849304	GRCh37	https://doi.org/10.6084/m9.figshare.24204843|ppd2023_EUR_sumstats.tsv.gz
+Cerebrospinal fluid volume measurement	Fitzgerald T	GCST90103381	36779085	GRCh38	https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST90103001-GCST90104000/GCST90103381/GCST90103381_buildGRCh38.txt
+Total cerebral volume	Tissink E	GCST90105076	35842455	GRCh37	https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST90105001-GCST90106000/GCST90105076/GCST90105076_buildGRCh37.tsv.gz
+Frontal lobe volume	van der Lee SJ	GCST008715	31396565	unknown	https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST008001-GCST009000/GCST008715/vanderLeeSJ_prePMID_FLV_EAonly.txt.gz
+Occipital lobe volume	van der Lee SJ	GCST008703	31396565	unknown	https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST008001-GCST009000/GCST008703/vanderLeeSJ_prePMID_OLV_EAonly.txt.gz
+Parietal lobe volume	van der Lee SJ	GCST008704	31396565	unknown	https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST008001-GCST009000/GCST008704/vanderLeeSJ_prePMID_PLV_EAonly.txt.gz
+Temporal lobe volume	van der Lee SJ	GCST008705	31396565	unknown	https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST008001-GCST009000/GCST008705/vanderLeeSJ_prePMID_TLV_EAonly.txt.gz
+Brain stem volume	Furtjes AE	GCST90085819	36987996	GRCh38	https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST90085001-GCST90086000/GCST90085819/GCST90085819_buildGRCh38.tsv.gz
+Cognitive aspects of educational attainment	Demange PA	GCST90011875	33414549	GRCh37	https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST90011001-GCST90012000/GCST90011875/GCST90011875_buildGRCh37.tsv.gz
+Age when finished full-time education	Schoeler T	GCST90267280	37106081	GRCh37	https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST90267001-GCST90268000/GCST90267280/GCST90267280_buildGRCh37.tsv
+Educational attainment - years of education	Okbay A	GCST003676	27225129	unknown	https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST003001-GCST004000/GCST003676/Okbay_27225129-EduYears_Main.txt.gz
+TREM2 in cerebrospinal fluid	Wang L	TREM22024	https://molecularneurodegeneration.biomedcentral.com/articles/10.1186/s13024-023-00687-4,GRCh38,https://ontime.wustl.edu/download/TREM2-CSF-1|phenocode-TREM2-CSF-1.tsv.gz
+Alzheimer disease 2	Jansen IE	GCST007320	30617256	GRCh37	https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST007001-GCST008000/GCST007320/AD_sumstats_Jansenetal_2019sept.txt.gz
+Alzheimer disease 3	Marioni RE	GCST005922	29777097	GRCh37	https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST005001-GCST006000/GCST005922/4_UK_Biobank_IGAP_17May2018
+Myocardial infarction	Hartiala JA	GCST011365	33532862	GRCh37	https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST011001-GCST012000/GCST011365/GCST011365_buildGRCh37.tsv
+Atrial fibrillation	Roselli C	GCST006061	29892015	GRCh37	https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST006001-GCST007000/GCST006061/harmonised/29892015-GCST006061-EFO_0000275-build37.f.tsv.gz
+Coronary artery disease	Aragam KG	GCST90132314	36474045	GRCh37	https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST90132001-GCST90133000/GCST90132314/GCST90132314_buildGRCh37.tsv
+Heart failure	Levin MG	GCST90162626	36376295	GRCh37	https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST90162001-GCST90163000/GCST90162626/GCST90162626_buildGRCh37.tsv.gz
+Posterior thigh muscle fat infiltration percentage	van der Meer D	GCST90267355	36402844	GRCh37	https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST90267001-GCST90268000/GCST90267355/GCST90267355.tsv.gz
+Basal cell carcinoma (MTAG)	Seviiri M	GCST90137411	36496446	GRCh37	https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST90137001-GCST90138000/GCST90137411/GCST90137411_buildGRCh37.tsv.gz
+Skin cancer	Sakaue S	GCST90018921	34594039	GRCh37	https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST90018001-GCST90019000/GCST90018921/harmonised/34594039-GCST90018921-EFO_0004198-Build37.f.tsv.gz
+Amyotrophic lateral sclerosis	Nicolas A	GCST005647	29566793	unknown https://ftp.ebi.ac.uk/pddub/databases/gwas/summary_statistics/GCST005001-GCST006000/GCST005647/alsMetaSummaryStats_march21st2018.txt

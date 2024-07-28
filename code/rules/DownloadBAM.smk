@@ -13,6 +13,15 @@ rule MakeFileManifestJson:
         """
         python scripts/make_tissue_manifest.py --tissue_samples {params} --output {output} &> {log}
         """
+
+use rule MakeFileManifestJson as MakeFileManifestJson_subsample with:
+    output:
+        'gtex-download/subset/files/tissue-manifest.json'
+    params:
+        '.'.join(subsamples)
+    log:
+        'logs/makefilemanifest/subsamples_.json'
+    
         
 rule DownloadFromGTEx_Brain_Cortex:
     input:
@@ -310,3 +319,64 @@ rule BamIndex_DS:
         """
         samtools index {input} {output} > {log}
         """
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Adipose_Subcutaneous with:
+    output:
+        temp(expand(
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
+        IndID = adipose_subcutaneous_samples
+        ))
+    wildcard_constraints:
+        Tissue = 'Adipose_Subcutaneous'
+
+
+use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Breast_Mammary_Tissue with:
+    output:
+        temp(expand(
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
+        IndID = Breast_Mammary_Tissue_samples
+        ))
+    wildcard_constraints:
+        Tissue = 'Breast_Mammary_Tissue'
+
+use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Heart_Left_Ventricle with:
+    output:
+        temp(expand(
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
+        IndID = Heart_Left_Ventricle_samples
+        ))
+    wildcard_constraints:
+        Tissue = 'Heart_Left_Ventricle'
+
+use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Skin_Sun_Exposed_Lower_leg with:
+    output:
+        temp(expand(
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
+        IndID = Skin_Sun_Exposed_Lower_leg_samples
+        ))
+    wildcard_constraints:
+        Tissue = 'Skin_Sun_Exposed_Lower_leg'
+
+use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Testis with:
+    output:
+        temp(expand(
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
+        IndID = Testis_samples
+        ))
+    wildcard_constraints:
+        Tissue = 'Testis'
+
+

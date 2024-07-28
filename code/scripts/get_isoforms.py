@@ -605,7 +605,7 @@ def get_corrected_exons(segments_df, factor_junctions_bed, bed_intersection, jun
     corrected_exons = pd.DataFrame(columns=['chrom', 'start', 'end'])
     
     # Initialize lists to store exon boundaries
-    start_list = [segments_df['start'][0]]
+    start_list = [segments_df['start'].iloc[0]]
     end_list = []
     # Iterate through factor junctions
     for i in range(len(factor_junctions_bed['start'])):
@@ -624,7 +624,9 @@ def get_corrected_exons(segments_df, factor_junctions_bed, bed_intersection, jun
         bed_intersection_slice = bed_intersection[bed_intersection['names'] == factor_junc]
         # print(bed_intersection_slice)
         # Find the best junction for the current factor junction
-        best_junction = find_best_junction(bed_intersection_slice, start_limit, end_limit)
+        best_junction = find_best_junction(bed_intersection_slice, start_limit, end_limit, gene_size=gene_size)
+
+        print(best_junction)
 
         # print(best_junction)
     
@@ -720,6 +722,7 @@ def find_best_junction(bed_intersection_slice, start_limit, end_limit, gene_size
     elif bed_intersection_slice['overlap'].iloc[0] == '0':
         gap_min_size = gene_size / 10
         if gap_size >= gap_min_size:
+            
             best_junc = "gap::"
     else:
         # Initialize variables for best junction selection
@@ -779,6 +782,8 @@ def find_best_junction(bed_intersection_slice, start_limit, end_limit, gene_size
             best_junc += ':'
             if any_end_close:
                 best_junc += str(closest_end)
+            if best_junc == 'gap::':
+                best_junc = None
 
     else:
         min_overall_distance = min_distance_start + min_distance_end
@@ -789,11 +794,17 @@ def find_best_junction(bed_intersection_slice, start_limit, end_limit, gene_size
             best_junc += ':'
             if any_end_close:
                 best_junc += str(closest_end)
-            
+
+            if best_junc == 'gap::':
+                best_junc = None
+
+
+    # if best_junc == 'gap::':
+    #     print(gap_min_size)
     return best_junc
 
 
-def correct_factor(factor, junctions_bed, coords, coords_all, correct_bias=True, binary_fraction=0.25, strand=None):
+def correct_factor(factor, junctions_bed, coords, coords_all, correct_bias=True, binary_fraction=0.25, strand=None, print_gene = None):
     """
     Function: correct_factor
     
@@ -820,6 +831,8 @@ def correct_factor(factor, junctions_bed, coords, coords_all, correct_bias=True,
     - pandas: Data manipulation library for Python.
     """
 
+    coords_gap = int(coords[2].split(':')[1]) - int(coords[1].split(':')[1])
+
     factor, coords = correct_factor_coords(factor, coords, coords_all)
 
     
@@ -838,6 +851,15 @@ def correct_factor(factor, junctions_bed, coords, coords_all, correct_bias=True,
     
     # Identify continuous segments
     segments_df = find_continuous_segments(coords, binary_y)
+
+    ##### CORRECTED FOR PKM 7/15/2024
+
+    segment_min = np.min([coords_gap*5, 15])
+
+    print(segment_min)
+
+    segments_df = segments_df.loc[(segments_df.end - segments_df.start) >= segment_min].reset_index()
+    #####
     
     # Check the number of segments
     n_segments = segments_df.shape[0]
@@ -868,7 +890,7 @@ def correct_factor(factor, junctions_bed, coords, coords_all, correct_bias=True,
 
 
 
-def get_isoforms(EF, junctions_bed, coordinates, coordinates_all, correct_bias=True, binary_fraction=0.25, strand=None):
+def get_isoforms(EF, junctions_bed, coordinates, coordinates_all, correct_bias=True, binary_fraction=0.25, strand=None, print_gene=None):
     """
     Function: get_isoforms
     
@@ -907,11 +929,12 @@ def get_isoforms(EF, junctions_bed, coordinates, coordinates_all, correct_bias=T
     
     # Iterate through each expression factor
     for k in range(K):
+        print(k+1)
         # Extract factor for current isoform
         factor = np.array(EF[:, k])
         
         # Correct the factor to generate isoform
-        isoform_k = correct_factor(factor, junctions_bed, coordinates, coordinates_all, correct_bias=correct_bias, binary_fraction=binary_fraction, strand=strand)
+        isoform_k = correct_factor(factor, junctions_bed, coordinates, coordinates_all, correct_bias=correct_bias, binary_fraction=binary_fraction, strand=strand, print_gene = print_gene)
         
         # Store isoform in dictionary
         isoforms[f'factor_{str(k+1)}'] = isoform_k

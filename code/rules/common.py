@@ -66,7 +66,8 @@ quick_test_genes = ['NDUFA3', 'SRSF3', #'SRSF6',
 genes = sorted(set(genes_test + genes_neg_pos + quick_test_genes)) + ['ABI2']
 
 
-gtex_samples = pd.read_csv('config/samples.tsv', sep='\t', index_col=0)
+# gtex_samples = pd.read_csv('config/samples.tsv', sep='\t', index_col=0)
+gtex_samples = pd.read_csv('config/samples_extended.tsv', sep='\t', index_col=0)
 tissue_list = ['Adipose_Subcutaneous', 'Muscle_Skeletal', 'Arterial_Tibial', 'Breast_Mammary_Tissue',
                'Skin_Not_Sun_Exposed_Suprapubic', 'Brain_Cortex', 'Thyroid', 'Lung', 'Spleen', 'Pancreas',
                'Heart_Atrial_Appendage', 'Heart_Left_Ventricle', 'Brain_Cerebellum', 'Cells_Cultured_fibroblasts', 
@@ -104,9 +105,11 @@ caudate_samples = gtex_samples.loc[gtex_samples.tissue_id == 'Brain_Caudate_basa
 cerebellarh_samples = gtex_samples.loc[gtex_samples.tissue_id == 'Brain_Cerebellar_Hemisphere'].index 
 
 
-
-
-
+adipose_subcutaneous_samples = gtex_samples.loc[gtex_samples.tissue_id == 'Adipose_Subcutaneous'].index
+Breast_Mammary_Tissue_samples = gtex_samples.loc[gtex_samples.tissue_id == 'Breast_Mammary_Tissue'].index 
+Heart_Left_Ventricle_samples = gtex_samples.loc[gtex_samples.tissue_id == 'Heart_Left_Ventricle'].index  
+Skin_Sun_Exposed_Lower_leg_samples = gtex_samples.loc[gtex_samples.tissue_id == 'Skin_Sun_Exposed_Lower_leg'].index  
+Testis_samples = gtex_samples.loc[gtex_samples.tissue_id == 'Testis'].index  
 
     
 rsem_output_list = ['summary.txt']
@@ -122,6 +125,13 @@ def GetTissueList(wildcards):
 def GetTissueListStr(wildcards):
     IndID_list = '.'.join(gtex_samples.loc[gtex_samples.tissue_id == wildcards.Tissue].index)
     return IndID_list
+
+
+
+
+# def GetTissueListStr_subsamples(wildcards):
+#     IndID_list = '.'.join(gtex_samples.loc[gtex_samples.tissue_id == wildcards.Tissue].index)
+#     return IndID_list
 
 def GetTissueListStr2(wildcards):
     IndID_list = '.'.join(gtex_samples.loc[gtex_samples.tissue_id == wildcards.Tissue_2].index)
@@ -207,6 +217,8 @@ tissue_list = ['Brain_Anterior_cingulate_cortex_BA24',
 'Liver',                   
 'Muscle_Skeletal',  
 'Whole_Blood']
+
+new_tissues = ['Adipose_Subcutaneous', 'Breast_Mammary_Tissue', 'Heart_Left_Ventricle', 'Skin_Sun_Exposed_Lower_leg', 'Testis']
 
 selected_genes = pd.read_csv('../data/protein_coding_genes.bed.gz', sep='\t', #'../data/selected_genes.bed', sep='\t', 
                              names = ['chrom', 'start', 'end', 'gene', 'gene_symbol', 'strand'])
@@ -308,16 +320,56 @@ tissue_sub_list = sorted(['Brain_Anterior_cingulate_cortex_BA24',
                       'Heart_Atrial_Appendage', 
                       'Muscle_Skeletal',
                       'Whole_Blood'])
-qqnorm_output = []
-for tissue_ in tissue_sub_list:
-    for k in [2, 3, 4, 5, 10]:
-        qqnorm_output.append(f'QTLs/{tissue_}/multi_tissue.snmf_{str(k)}.qqnorm.bed.gz')
 
-for tissue_ in ['Brain_Frontal_Cortex_BA9', 'Muscle_Skeletal', 'Whole_Blood', 'Skin_Not_Sun_Exposed_Suprapubic']:
-    qqnorm_output.append(f'QTLs/{tissue_}/single_tissue.snmf_3.qqnorm.bed.gz')
+
+subsamples = []
+for tissue_ in tissue_sub_list:
+    subsamples += list(gtex_samples.loc[(gtex_samples.tissue_id == tissue_) & (gtex_samples.group == 'train')].index[[0,25, 50, 75, 99]])
+    
+# for tissue_ in ['Brain_Frontal_Cortex_BA9', 'Muscle_Skeletal', 'Whole_Blood', 'Skin_Not_Sun_Exposed_Suprapubic']:
+#     qqnorm_output.append(f'QTLs/{tissue_}/single_tissue.snmf_3.qqnorm.bed.gz')
 
 def much_more_mem_after_first_attempt(wildcards, attempt):
     if int(attempt) == 1:
         return 4000
     else:
         return 52000
+
+NumPvalsForPi1Chunks = 40
+
+
+
+#### GWAS
+
+colocs_df = pd.read_csv("config/ColocRunWildcards.tsv", index_col=0, comment='#', sep='\t', keep_default_na=False)
+colocs_gwas = colocs_df.loc[colocs_df['FeatureCoordinatesRedefinedFor']=='ForGWASColoc']
+
+def GetMolPhenotypesToColoc(wildcards):
+    ProvidedMolPhenotypeList = colocs_df.loc[wildcards.ColocName]['MolPhenotypesToColoc']
+    if ProvidedMolPhenotypeList == '':
+        return ' '.join(PhenotypesToColoc)
+    else:
+        return ProvidedMolPhenotypeList
+
+
+
+########### Gao data
+
+gao_files = os.listdir('gao_data/bed_files/')
+
+first_read_plus = pd.Index([x.split('.plus.')[0] for x in gao_files if x.endswith('.plus.bed.gz')])
+first_read_minus = pd.Index([x.split('.minus.')[0] for x in gao_files if x.endswith('.minus.bed.gz')])
+
+second_read_plus = pd.Index([x.split('.plus.second_read.')[0] for x in gao_files if x.endswith('.plus.second_read.bed.gz')])
+second_read_minus = pd.Index([x.split('.minus.second_read.')[0] for x in gao_files if x.endswith('.minus.second_read.bed.gz')])
+
+gao_complete_samples = sorted(first_read_plus.intersection(second_read_plus).intersection(first_read_minus).intersection(second_read_minus))
+
+gao_genes = list(pd.read_csv('Annotations/gencode.v44.primary_assembly.protein_coding.genes.bed.gz', sep='\t').gene_id)
+
+gwas_annot = pd.read_csv('config/gwas_annot_map.csv')
+
+gwas_traits = [x.rstrip() for x in open('config/gwas_features.txt').readlines()]
+
+gwas_traits_for_coloc = [x for x in list(gwas_annot.trait) if x in gwas_traits]
+#gwas_traits = [x for x in gwas_traits if x in list(gwas_annot.trait)]

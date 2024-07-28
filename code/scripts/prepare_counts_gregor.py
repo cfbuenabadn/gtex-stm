@@ -63,8 +63,8 @@ if __name__ == '__main__':
     gene_bed = selected_genes.loc[selected_genes.gene==gene_name]
     print(gene_bed)
     chrom = str(gene_bed.chrom.iloc[0])
-    start = int(gene_bed.start.iloc[0]) - 50
-    end = int(gene_bed.end.iloc[0]) + 50
+    start = int(gene_bed.start.iloc[0]) - 100
+    end = int(gene_bed.end.iloc[0]) + 100
 
     process_and_write_gregor(dataset, chrom, start, end, gene_name)
     print('finished!')

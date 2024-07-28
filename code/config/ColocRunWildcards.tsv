@@ -1,0 +1,22 @@
+# Tsv configuration file of colocalization runs Each colocalization run has a
+# ColocName used to name output files QTLsGenotypeSet is [''|'HarmonizedSNPs'].
+# 'HarmonizedSNPs' will use same set of SNPs for all phenotypes for QTLmapping
+# and colocalization. '' will use intersection of SNPs for colocalization
+# FeatureCoordinatesRedefinedFor is ['ForColoc'|'ForGWASColoc']. ForColoc is
+# for gene-wise molQTL colocalization. ForGWASColoc is for GWAS-locus-wise
+# colocalization. Threshold defines the permutation pass p value threshold to
+# attempt colocalization with a molQTL phenotype. MolPhenotypesToColoc is an
+# optional space separated list of mol Phenotype wildcards to include in
+# colocalization. If none is provided, will default to PhenotypesToColoc in
+# common.py.
+ColocName	QTLsGenotypeSet	FeatureCoordinatesRedefinedFor	Threshold	MolPhenotypesToColoc
+GWAS_GTEx_01		ForGWASColoc	0.01	Brain_Anterior_cingulate_cortex_BA24 Brain_Cortex Brain_Frontal_Cortex_BA9 Brain_Putamen_basal_ganglia Heart_Atrial_Appendage Liver Lung Muscle_Skeletal Skin_Not_Sun_Exposed_Suprapubic Whole_Blood
+GWAS_GTEx_005		ForGWASColoc	0.005	Brain_Anterior_cingulate_cortex_BA24 Brain_Cortex Brain_Frontal_Cortex_BA9 Brain_Putamen_basal_ganglia Heart_Atrial_Appendage Liver Lung Muscle_Skeletal Skin_Not_Sun_Exposed_Suprapubic Whole_Blood
+GWAS_GTEx_001		ForGWASColoc	0.001	Brain_Anterior_cingulate_cortex_BA24 Brain_Cortex Brain_Frontal_Cortex_BA9 Brain_Putamen_basal_ganglia Heart_Atrial_Appendage Liver Lung Muscle_Skeletal Skin_Not_Sun_Exposed_Suprapubic Whole_Blood
+GWAS_Brain		ForGWASColoc	0.01	Brain_Anterior_cingulate_cortex_BA24 Brain_Cortex Brain_Frontal_Cortex_BA9 Brain_Putamen_basal_ganglia
+GWAS_Muscle_Skeletal		ForGWASColoc	0.01	Muscle_Skeletal
+GWAS_Whole_Blood		ForGWASColoc	0.01	Whole_Blood
+GWAS_Lung		ForGWASColoc	0.01	Lung
+GWAS_Liver		ForGWASColoc	0.01	Liver
+GWAS_Skin_Not_Sun_Exposed_Suprapubic		ForGWASColoc	0.01	Skin_Not_Sun_Exposed_Suprapubic
+GWAS_Heart_Atrial_Appendage		ForGWASColoc	0.01	Heart_Atrial_Appendage

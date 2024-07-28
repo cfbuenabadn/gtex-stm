@@ -321,12 +321,13 @@ if __name__ == '__main__':
     i = int(arguments[3])
     n = int(arguments[4])
     correction_tag = str(arguments[5])
+    K = str(int(arguments[6]))
 
     # gencode_exons_bed = 'gencode.v44.primary_assembly.exons.sorted.bed.gz'
     
     gencode_exons = pd.read_csv(gencode_exons_bed, sep='\t', names = ['chrom', 'start', 'end', 'gene_id', 
                                                            'transcript_id', 'strand', 'exon_id', 'transcript_support_level',
-                                                           'basic', 'Ensembl_canonical', 'MANE_Select', 'appris'])
+                                                           'basic', 'Ensembl_canonical', 'MANE_Select', 'appris', 'transcript_type'])
     
     # snmf_exons_bed = '/project2/mstephens/cfbuenabadn/gtex-stm/code/ebpmf_models/filtered/snmf_10/tables/snmf.exons.sorted.bed.gz'
     
@@ -345,7 +346,7 @@ if __name__ == '__main__':
 
     selected_genes = genes[slice_start:slice_end]
 
-    out_prefix = f'ebpmf_models/filtered/snmf_10/tables/tmp/annotated.snmf.{correction_tag}'
+    out_prefix = f'ebpmf_models/filtered/snmf_{K}/tables/tmp/annotated.snmf.{correction_tag}'
     
     annot_out_tab = out_prefix + f'_{str(i)}.tab.gz'
     
