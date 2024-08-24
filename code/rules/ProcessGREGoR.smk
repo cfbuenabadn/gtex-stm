@@ -103,7 +103,7 @@ rule MakeGeneCounts_Gregor:
     log:
         "/scratch/midway3/cnajar/logs/counts_gregor/{dataset}.{gene}.log"
     wildcard_constraints:
-        gene = '|'.join(selected_genes.gene),
+        gene = '|'.join(list(selected_genes.gene)),
         dataset = 'sberger'
     shell:
         """
@@ -112,5 +112,49 @@ rule MakeGeneCounts_Gregor:
 
 rule collect_gregor:
     input:
-        expand('gregor_data/sberger/counts/{gene}.csv.gz', gene = selected_genes.gene)
+        expand('gregor_data/sberger/counts/{gene}.csv.gz', gene = list(selected_genes.gene))
 
+
+
+
+
+
+#####################
+
+
+
+rule create_snmf_sberger_bash_scripts:
+    output:
+        expand("ebpmf_models/sberger_models/bash_scripts/{n}.sh", n=range(0,2001))
+    resources:
+        mem_mb = 8000
+    log:
+        'logs/create_bash_sberger.log'
+    shell:
+        """
+        python scripts/create_bash_scripts_sberger.py &> {log}
+        """
+
+
+
+
+
+rule snmf_gregor_chunk:
+    input:
+        bashscript = "ebpmf_models/sberger_models/bash_scripts/{n}.sh",
+    wildcard_constraints:
+        n = '|'.join([str(x) for x in range(0,2001)]),
+    output:
+        directory("ebpmf_models/sberger_models/RDS/{n}")
+    resources:
+        mem_mb = lambda wildcards, attempt: 32000 if int(attempt) == 1 else 58000
+    log:
+        "logs/snmf_sberger/{n}.log"
+    shell:
+        """
+        bash {input.bashscript} &> {log}
+        """
+
+rule collect_gregor_snmf:
+    input:
+        expand("ebpmf_models/sberger_models/RDS/{n}", n = range(0, 2001))

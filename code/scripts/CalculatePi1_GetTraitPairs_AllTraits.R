@@ -25,7 +25,7 @@ library(tidyverse)
 library(qvalue)
 
 PermutationPass.dat <- permutation_f_in %>%
-  setNames(str_extract(., "(?<=QTLs/)[^/]+")) %>%
+  setNames(str_extract(., "(?<=QTLs/GTEx_10/)[^/]+")) %>%
   lapply(read_delim, delim=' ') %>% 
   bind_rows(.id="tissue_id") %>% 
   select(PC=tissue_id, grp_id, phe_id, p_permutation=adj_beta_pval, beta=slope, beta_se=slope_se, singletrait_topvar=var_id, singletrait_topvar_chr = var_chr, singletrait_topvar_pos=var_from) %>% 

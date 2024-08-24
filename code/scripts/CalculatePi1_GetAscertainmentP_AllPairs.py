@@ -85,15 +85,16 @@ def get_snp_record(vcf, var_id):
 
 df = pd.read_csv(f_in, sep='\t')
 
-file_suffix = tabix_f_in_list[0].split('/')[2]
-k = f_in.split('snmf_')[1].split('.')[0]
-suffix_qqnorm = f'multi_tissue.snmf_{k}.sorted.qqnorm.bed.gz'
+file_suffix = tabix_f_in_list[0].split('/')[3]
+k = f_in.split('_')[1].split('.')[0]
+annotation = file_suffix.split('_')[0]
+suffix_qqnorm = f'{annotation}_{k}.sorted.qqnorm.bed.gz'
 
-TabixFilesDict = {re.search("QTLs/(.+?)/" + file_suffix, fn).group(1):{
+TabixFilesDict = {re.search("QTLs/GTEx_10/(.+?)/" + file_suffix, fn).group(1):{
     'NominalPass':pysam.TabixFile(fn, parser=pysam.asTuple()),
-    'Samples':pd.read_csv(f'QTLs/{re.search("QTLs/(.+?)/" + file_suffix, fn).group(1)}/{suffix_qqnorm}', sep='\t').columns[6:]
+    'Samples':pd.read_csv(f'QTLs/GTEx_10/{re.search("QTLs/GTEx_10/(.+?)/" + file_suffix, fn).group(1)}/{suffix_qqnorm}', sep='\t').columns[6:]
                                                                       } for fn in tabix_f_in_list}
-
+print(TabixFilesDict)
 # dfhead = df.head(100)
 # dfhead[['trait.x.p.in.y', 'x.beta.in.y', 'x.beta_se.in.y']] = dfhead.apply(GetSummaryStatsFromOtherTabixFiles, axis=1, TabixFilesDict=TabixFilesDict, ColumnIndexes = [11, 13,14])
 # dfhead['trait.x.p.in.y'] = dfhead.apply(GetAscertainmentSNP_P, axis=1, TabixFilesDict=TabixFilesDict )

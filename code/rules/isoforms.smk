@@ -190,5 +190,40 @@ rule collect_transcript_EL:
                correction_tag = ['3prime_corrected', 'uncorrected'])
 
 
+rule isoform_second_annot:
+    input:
+        'ebpmf_models/filtered/snmf_10/tables/snmf.merged_isoforms.exons.sorted.bed.gz',
+        'Annotations/gencode.v44.primary_assembly.exons.sorted.bed.gz',
+        'ebpmf_models/filtered/snmf_10/tables/annotated.snmf.merged_isoforms.tab.gz'
+    output:
+        'ebpmf_models/filtered/snmf_10/tables/second_annotation.snmf.merged_isoforms.tab.gz'
+    log:
+         'logs/second_annot.log'
+    resources:
+        mem_mb = 12000
+    shell:
+        """
+        python scripts/second_annotation.py &> {log}
+        """
 
 
+rule CollectJunctionsBedFromGTEx:
+    input:
+        'gtex_tables/GTEx_Analysis_2017-06-05_v8_STARv2.5.3a_junctions.gct.gz'
+    output:
+        bed = 'gtex_tables/junctions.bed.gz',
+        tbi = 'gtex_tables/junctions.bed.gz.tbi',
+    log:
+        'logs/make_junctions_bed.log'
+    resources:
+        mem_mb = 12000
+    shell:
+        """
+    (zcat {input} | tail -n+3 - | awk -F'\\t' 'BEGIN {{OFS="\\t"}} NR==1 {{
+        printf "#chrom\\tstart\\tend\\tgene\\n";
+    }} NR>1 {{
+        gsub("_", "\\t", $1);
+        print $1, $2
+    }}' OFS='\\t' - | sed 's/\\t_/\\t/g') | bgzip /dev/stdin -c > {output.bed}
+    tabix -p bed {output.bed}
+    """

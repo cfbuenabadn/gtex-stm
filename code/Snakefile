@@ -32,8 +32,8 @@ localrules:
     DownloadHg38Ref,
     DownloadFromGTEx_TestSamples,
     DownloadFromGTEx_TestSamples_juncs,
-    DownloadTranscriptome
-
+    DownloadTranscriptome,
+    InstallHyprcoloc
 
 rule all:
     input:

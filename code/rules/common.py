@@ -352,6 +352,15 @@ def GetMolPhenotypesToColoc(wildcards):
         return ProvidedMolPhenotypeList
 
 
+def GetColocTsvFormattedString(string):
+    """
+    return a snakemake input function that returns formatted string with wildcard values that match colocs_df based on ColocName index wildcard
+    """
+    def F(wildcards):
+        return string.format(**colocs_df.loc[wildcards.ColocName].to_dict())
+    return F
+
+
 
 ########### Gao data
 
@@ -371,5 +380,15 @@ gwas_annot = pd.read_csv('config/gwas_annot_map.csv')
 
 gwas_traits = [x.rstrip() for x in open('config/gwas_features.txt').readlines()]
 
+gwas_traits_bjf79 = pd.read_csv("config/bjf79_gwas_table.tsv", index_col='gwas', sep='\t', 
+                                usecols=['gwas', 'trait', 'FTPPath', "SummaryStatsLocalFilepath", 'ProcessingMethod', "Continuous"])
+
+
+
 gwas_traits_for_coloc = [x for x in list(gwas_annot.trait) if x in gwas_traits]
+gwas_traits_for_coloc += list(gwas_traits_bjf79.index)
+
+# print("gwas_traits_for_coloc")
+# print(len(gwas_traits_for_coloc))
+
 #gwas_traits = [x for x in gwas_traits if x in list(gwas_annot.trait)]

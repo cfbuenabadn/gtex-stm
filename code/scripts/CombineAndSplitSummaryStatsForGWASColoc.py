@@ -102,9 +102,10 @@ for PermutationPassFileIn, NominalPassFileIn in PairedSummaryStatFilesIn:
                             _ = fh_out.write("")
                         FilesOpened.add(FileOut)
                     fh_out = gzip.open(FileOut, "at")
+                tissue_name = NominalPassFileIn.split('/')[2]
                 _ = fh_out.write(
                     #phenotype\tsource_file\tgwas_locus\tsnp\tbeta\tbeta_se\tp\n
-                    f"{phenotype}\t{NominalPassFileIn}\t{gwas_locus}\t{l[7]}\t{l[13]}\t{l[14]}\t{l[11]}\n"
+                    f"{phenotype}\t{tissue_name}\t{gwas_locus}\t{l[7]}\t{l[13]}\t{l[14]}\t{l[11]}\n"
                 )
                 OpenFileOut = FileOut
     fh.close()

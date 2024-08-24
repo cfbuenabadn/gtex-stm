@@ -180,7 +180,7 @@ rule QTLtools_generalized:
         bed_tbi = GetQTLToolsTbiInput, #'QTLs/GTEx_10/{tissue_id}/{annotation}_{K}{FeatureCoordinatesRedefinedFor}.sorted.qqnorm.bed.gz.tbi',
         cov = 'QTLs/GTEx_10/{tissue_id}/{annotation}_{K}.sorted.qqnorm.bed.pca'
     output:
-        "QTLs/GTEx_10/{tissue_id}/{annotation}_{K}{SexGroup}{FeatureCoordinatesRedefinedFor}.{Pass}.Chunks/{QTLTools_chunk_n}.txt"
+        temp("QTLs/GTEx_10/{tissue_id}/{annotation}_{K}{SexGroup}{FeatureCoordinatesRedefinedFor}.{Pass}.Chunks/{QTLTools_chunk_n}.txt")
     log:
         "/scratch/midway3/cnajar/logs/QTLs/{tissue_id}/{annotation}_{K}{SexGroup}{FeatureCoordinatesRedefinedFor}.{Pass}.Chunks/{QTLTools_chunk_n}.log"
     resources:
@@ -321,7 +321,7 @@ rule tabixNominalPassQTLResultsForGWASColoc:
         tissue_id = "|".join(tissue_sub_list),
         SexGroup = "|.male|.female",
         K = '2|3|4|5|10',
-        FeatureCoordinatesRedefinedFor = '.ForGWASColoc',
+        FeatureCoordinatesRedefinedFor = '.ForGWASColoc|',
         Pass = 'NominalPass'
     params:
         sort_temp = '-T ' + config['scratch'][:-1]
