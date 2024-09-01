@@ -68,6 +68,8 @@ def compare_transcript_v_annotation(transcript_bed, input_transcript, exons, gen
     transcript_list = []
     
     for transcript, df in exons.loc[exons.gene_id == gene].groupby('transcript_id'):
+        if df.shape[0] <= 1:
+            continue
         if transcript == input_transcript:
             continue
         annot_iso = get_intron_chain(df)
@@ -126,7 +128,8 @@ def get_annotation_transcript(snmf_exons, gencode_exons, transcript):
             else:
                 transcripts = '|'.join(list(df_gencode.loc[df_gencode.chain_annot == 'subchain.a'].transcript))
             
-            if 'annotated' in list(df_gencode.loc[df_gencode.chain_annot.isin(['chain.match', 'subchain.a'])].utr_annot):
+            # if 'annotated' in list(df_gencode.loc[df_gencode.chain_annot.isin(['chain.match', 'subchain.a'])].utr_annot):
+            if 'annotated' in list(df_gencode.utr_annot):
                 gencode_annot = 'annotated_chain.annotated_utr'
             else:
                 gencode_annot = 'annotated_chain.alt_utr'

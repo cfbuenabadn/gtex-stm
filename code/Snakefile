@@ -20,7 +20,7 @@ include: "rules/ProcessGaoData.smk"
 include: "rules/ProcessGWAS.smk"
 include: "rules/ColocPrep.smk"
 include: "rules/CoveragePlots.smk"
-
+include: "rules/AD_and_rare_disease.smk"
 localrules:
     all,
     DownloadFromGTEx_Brain_Cortex,

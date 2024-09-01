@@ -115,7 +115,7 @@ rule GetInputForIntronMetaplot:
     input:
         snmf = 'CoveragePlots/bed_files/introns/snmf.retained_introns.bed.gz',
         gencode = 'CoveragePlots/bed_files/introns/gencode.retained_introns.bed.gz',
-        gencode_exons = 'Annotations/gencode.v44.primary_assembly.exons.sorted.bed.gz',
+        gencode_exons = 'Annotations/gencode.v44.primary_assembly.exons.bed.gz', #'Annotations/gencode.v44.primary_assembly.exons.sorted.bed.gz',
         snmf_exons = 'ebpmf_models/filtered/snmf_10/tables/snmf.merged_isoforms.exons.sorted.bed.gz',
         appris = 'CoveragePlots/bed_files/introns/gencode.appris_introns.bed.gz'
     output:
@@ -139,6 +139,19 @@ rule GetInputForIntronMetaplot:
         (bedtools intersect -v -f 0.01 -F 0.01 -a {input.appris} -b {input.snmf_exons} | bedtools intersect -v -f 0.01 -F 0.01 -a - -b {input.gencode_exons} | bedtools sort -i - > {output.appris}) &>> {log}
         """
 
+rule get_bed_for_all_snmf_metaplot:
+    input:
+        'CoveragePlots/bed_files/introns/snmf.retained_introns.bed.gz'
+    output:
+        'CoveragePlots/bed_files/introns/snmf.retained_introns.bed'
+    log:
+        "/scratch/midway3/cnajar/logs/get_unzipped_bed_snmf_introns.log"
+    resources:
+        mem_mb = 12000
+    shell:
+        """
+        (zcat {input} > {output}) &> {log}
+        """
 
 rule GatherIntronMetaplotInput:
     input:
@@ -166,7 +179,7 @@ rule ComputeMatrixForCoverageMetaplots_sep:
         ri_group = '|'.join(['snmf_and_gencode.retained_introns', 'snmf_only.retained_introns', 'gencode_only.retained_introns', 'appris_introns',
                              'snmf.flanking_exons_1', 'gencode.flanking_exons_1', 'appris_flanking_exons_1',
                              'snmf.flanking_exons_2', 'gencode.flanking_exons_2', 'appris_flanking_exons_2',
-                             'vastdb.flanking_exons_1', 'vastdb.flanking_exons_2'])
+                             'vastdb.flanking_exons_1', 'vastdb.flanking_exons_2', 'snmf.retained_introns'])
     log:
         "logs/Metaplots/ComputeMatrix.{Tissue}.{ri_group}.log"
     resources:
@@ -183,7 +196,7 @@ rule collect_metaplot_matrices:
     input:
         expand('CoveragePlots/matrices/{Tissue}.{ri_group}.mat.gz', Tissue=tissue_sub_list, ri_group = ['snmf_and_gencode.retained_introns',
                'snmf_only.retained_introns', 'gencode_only.retained_introns', 'appris_introns', 'snmf.flanking_exons_1', 'gencode.flanking_exons_1',
-               'appris_flanking_exons_1', 'snmf.flanking_exons_2', 'gencode.flanking_exons_2', 'appris_flanking_exons_2'])
+               'appris_flanking_exons_1', 'snmf.flanking_exons_2', 'gencode.flanking_exons_2', 'appris_flanking_exons_2', 'snmf.retained_introns'])
 
 
 
@@ -195,7 +208,7 @@ rule GetInputForIntronMetaplot_split:
     input:
         snmf = 'CoveragePlots/bed_files/introns/snmf.retained_introns.bed.gz',
         gencode = 'CoveragePlots/bed_files/introns/gencode.retained_introns.bed.gz',
-        gencode_exons = 'Annotations/gencode.v44.primary_assembly.exons.sorted.bed.gz',
+        gencode_exons = 'Annotations/gencode.v44.primary_assembly.exons.bed.gz', #'Annotations/gencode.v44.primary_assembly.exons.sorted.bed.gz',
         snmf_exons = 'ebpmf_models/filtered/snmf_10/tables/snmf.merged_isoforms.exons.sorted.bed.gz',
         appris = 'CoveragePlots/bed_files/introns/gencode.appris_introns.bed.gz',
         vastdb = 'CoveragePlots/bed_files/introns/vastdb.retained_introns.bed.gz'

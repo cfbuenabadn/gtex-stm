@@ -44,7 +44,7 @@ group_matrix <- function(df, k = 9){
 
 
 metadata = read_tsv('gregor_data/metadata/metadata_sberg.tab.gz') %>% data.frame()
-rownames(metadata) <- metadata$specimenID
+rownames(metadata) <- metadata$participant_id_batch
 
 
 counts <- paste0('gregor_data/sberger/counts/', gene_name, '.csv.gz') %>%
@@ -80,13 +80,13 @@ invitae_counts <- counts[invitae_samples,]
 
 
 seqmatic_counts <- seqmatic_counts %>% as.matrix()
-lib_size_ <- rowSum(seqmatic_counts) %>% as.integer()
+lib_size_ <- rowSums(seqmatic_counts) %>% as.integer()
 seqmatic_counts <- seqmatic_counts[lib_size_ >= 100,]
 print(dim(seqmatic_counts))
 kept_samples_seqmatic <- rownames(seqmatic_counts)
 
 invitae_counts <- invitae_counts %>% as.matrix()
-lib_size_ <- rowSum(invitae_counts) %>% as.integer()
+lib_size_ <- rowSums(invitae_counts) %>% as.integer()
 invitae_counts <- invitae_counts[lib_size_ >= 100,]
 print(dim(invitae_counts))
 kept_samples_invitae <- rownames(invitae_counts)
