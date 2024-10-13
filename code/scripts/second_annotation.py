@@ -1,25 +1,9 @@
 import numpy as np
 import pandas as pd
-# from matplotlib import pyplot as plt
-# import seaborn as sns
-# import pybedtools
 import gzip
-
-gencode_exons_bed = '/project2/mstephens/cfbuenabadn/gtex-stm/code/Annotations/gencode.v44.primary_assembly.exons.sorted.bed.gz'
-gencode_exons = pd.read_csv(gencode_exons_bed, sep='\t', 
-                            names = ['chrom', 'start', 'end', 'gene_id', 
-                                                           'transcript_id', 'strand', 'exon_id', 'transcript_support_level',
-                                                           'basic', 'Ensembl_canonical', 'MANE_Select', 'appris', 'transcript_type'])
-
-snmf_exons_bed = '/project2/mstephens/cfbuenabadn/gtex-stm/code/ebpmf_models/filtered/snmf_10/tables/snmf.merged_isoforms.exons.sorted.bed.gz'
-snmf_exons = pd.read_csv(snmf_exons_bed, sep='\t', names = ['chrom', 'start', 'end', 'gene_id', 
-                                                 'transcript_id', 'strand', 'factors', 'exon_id'])
+import sys
 
 
-annotation = pd.read_csv('../code/ebpmf_models/filtered/snmf_10/tables/annotated.snmf.merged_isoforms.tab.gz', sep='\t')
-annotation = annotation.loc[annotation.appris_transcript_length != 'appris_transcript_length']
-annotation['appris_transcript_length'] = annotation.appris_transcript_length.astype(int)
-annotation['gene_id'] = [x.split('.')[0] for x in annotation.transcript]
 
 def is_subchain(introns_a, introns_b):
     # if not all(intron in introns_a for intron in introns_b):
@@ -182,30 +166,55 @@ def define_annotation(snmf_exons, gencode_exons, transcript, annotation):
             utr = 'no_utr'
 
     return chain, ir, utr, transcripts
-        
 
-transcripts = list(snmf_exons.transcript_id.unique())
+if __name__ == '__main__':
 
-ir_annot_list = []
-utr_annot_list = []
-chain_annot_list = []
+    arguments = sys.argv
+    gencode_exons_file = arguments[1]
+    snmf_exons_file = arguments[2]
+    annotation_file = arguments[3]
+    output_file = arguments[4]
 
-with gzip.open('ebpmf_models/filtered/snmf_10/tables/second_annotation.snmf.merged_isoforms.tab.gz', 'wb') as fh:
-
-    for isoform in transcripts:
-        print(isoform)
-        try:
-            chain_annot, ir_annot, alt_utr_annot, transcripts = define_annotation(snmf_exons, gencode_exons, isoform, annotation)
-        except:
-            chain_annot = '.'
-            ir_annot = '.'
-            alt_utr_annot = '.'
-            transcripts = '.'
-        #chain_annot, ir_annot, alt_utr_annot = define_annotation(snmf_exons, gencode_exons, isoform, annotation)
-        gene, iso = isoform.split('.')
-        row = ('\t'.join([gene, isoform, chain_annot, transcripts, ir_annot, alt_utr_annot]) + '\n').encode()
-        fh.write(row)
-
-print('done!')
-        
+    # gencode_exons_bed = '/project2/mstephens/cfbuenabadn/gtex-stm/code/Annotations/gencode.v44.primary_assembly.exons.sorted.bed.gz'
+    gencode_exons = pd.read_csv(gencode_exons_file, sep='\t', 
+                                names = ['chrom', 'start', 'end', 'gene_id', 
+                                                               'transcript_id', 'strand', 'exon_id', 'transcript_support_level',
+                                                               'basic', 'Ensembl_canonical', 'MANE_Select', 'appris', 'transcript_type'])
     
+    # snmf_exons_bed = '/project2/mstephens/cfbuenabadn/gtex-stm/code/ebpmf_models/filtered/snmf_10/tables/snmf.merged_isoforms.exons.sorted.bed.gz'
+    snmf_exons = pd.read_csv(snmf_exons_file, sep='\t', names = ['chrom', 'start', 'end', 'gene_id', 
+                                                     'transcript_id', 'strand', 'factors', 'exon_id'])
+    
+    
+    annotation = pd.read_csv(annotation_file, sep='\t')
+    annotation = annotation.loc[annotation.appris_transcript_length != 'appris_transcript_length']
+    annotation['appris_transcript_length'] = annotation.appris_transcript_length.astype(int)
+    annotation['gene_id'] = [x.split('.')[0] for x in annotation.transcript]
+    
+            
+    
+    transcripts = list(snmf_exons.transcript_id.unique())
+    
+    ir_annot_list = []
+    utr_annot_list = []
+    chain_annot_list = []
+    
+    with gzip.open(output_file, 'wb') as fh:
+    
+        for isoform in transcripts:
+            print(isoform)
+            try:
+                chain_annot, ir_annot, alt_utr_annot, transcripts = define_annotation(snmf_exons, gencode_exons, isoform, annotation)
+            except:
+                chain_annot = '.'
+                ir_annot = '.'
+                alt_utr_annot = '.'
+                transcripts = '.'
+            #chain_annot, ir_annot, alt_utr_annot = define_annotation(snmf_exons, gencode_exons, isoform, annotation)
+            gene, iso = isoform.split('.')
+            row = ('\t'.join([gene, isoform, chain_annot, transcripts, ir_annot, alt_utr_annot]) + '\n').encode()
+            fh.write(row)
+    
+    print('done!')
+            
+        

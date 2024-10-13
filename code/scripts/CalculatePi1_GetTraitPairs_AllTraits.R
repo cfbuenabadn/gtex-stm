@@ -28,10 +28,12 @@ PermutationPass.dat <- permutation_f_in %>%
   setNames(str_extract(., "(?<=QTLs/GTEx_10/)[^/]+")) %>%
   lapply(read_delim, delim=' ') %>% 
   bind_rows(.id="tissue_id") %>% 
-  select(PC=tissue_id, grp_id, phe_id, p_permutation=adj_beta_pval, beta=slope, beta_se=slope_se, singletrait_topvar=var_id, singletrait_topvar_chr = var_chr, singletrait_topvar_pos=var_from) %>% 
+  select(PC=tissue_id, phe_id, p_permutation=adj_beta_pval, beta=slope, beta_se=slope_se, singletrait_topvar=var_id, singletrait_topvar_chr = var_chr, singletrait_topvar_pos=var_from) %>% 
+  #select(PC=tissue_id, grp_id, phe_id, p_permutation=adj_beta_pval, beta=slope, beta_se=slope_se, singletrait_topvar=var_id, singletrait_topvar_chr = var_chr, singletrait_topvar_pos=var_from) %>% 
   group_by(PC) %>% 
   mutate(FDR = qvalue(p_permutation)$qvalues) %>% 
-  mutate(GeneLocus = grp_id) %>% 
+  mutate(GeneLocus = str_extract(phe_id, "^[^.]+")) %>%
+  #mutate(GeneLocus = grp_id) %>% 
   unite(Trait, PC, phe_id, sep=";")
 
 print('Done reading tables')

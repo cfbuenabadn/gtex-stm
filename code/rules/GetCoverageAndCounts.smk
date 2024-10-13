@@ -116,3 +116,31 @@ rule collect_tissue_samples:
 rule collect_tissue_manifests:
     input:
         expand('gtex-download/{Tissue}/files/tissue-manifest.json', Tissue = new_tissues)
+
+
+
+rule GetBedsAndTabix_all:
+    input:
+        bam = "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/complete_tissues/{Tissue}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
+        bai = "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/complete_tissues/{Tissue}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.bai"
+    output:
+        bed = "coverage/complete_bed/{Tissue}/{IndID}.bed.gz",
+        tabix = "coverage/complete_bed/{Tissue}/{IndID}.bed.gz.tbi",
+    resources:
+        mem_mb = much_more_mem_after_first_attempt
+    wildcard_constraints:
+        Tissue = "Liver|Artery_Aorta|Adipose_Subcutaneous"
+    log:
+        "logs/bed_and_tabix/all_{Tissue}.{IndID}.log"
+    shell:
+        """
+        (bedtools genomecov -5 -bga -ibam {input.bam} | bgzip > {output.bed}) &> {log};
+        (tabix -p bed {output.bed}) &>> {log}
+        """
+
+
+rule collect_all_tissue_samples:
+    input:
+        expand("coverage/complete_bed/Adipose_Subcutaneous/{IndID}.bed.gz", IndID = adipose_all_samples),
+        expand("coverage/complete_bed/Artery_Aorta/{IndID}.bed.gz", IndID = aorta_all_samples)
+        #expand("coverage/complete_bed/Liver/{IndID}.bed.gz", IndID = liver_all_samples)

@@ -33,7 +33,10 @@ localrules:
     DownloadFromGTEx_TestSamples,
     DownloadFromGTEx_TestSamples_juncs,
     DownloadTranscriptome,
-    InstallHyprcoloc
+    InstallHyprcoloc,
+    DownloadFromGTEx_Liver_all,
+    DownloadFromGTEx_Aorta_all,
+    DownloadFromGTEx_Adipose_all
 
 rule all:
     input:

@@ -131,7 +131,7 @@ group_matrix <- function(df, k = 10){
   output_df <- do.call(cbind, output)
   
   return(output_df)
-}
+}}
 
 
 attributes <- read_tsv(paste0('coverage/counts_filtered_stats/', gene_name, '.stats'), col_names = c('trait', 'quant'))

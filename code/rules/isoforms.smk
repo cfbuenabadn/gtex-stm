@@ -192,9 +192,9 @@ rule collect_transcript_EL:
 
 rule isoform_second_annot:
     input:
-        'ebpmf_models/filtered/snmf_10/tables/snmf.merged_isoforms.exons.sorted.bed.gz',
-        'Annotations/gencode.v44.primary_assembly.exons.sorted.bed.gz',
-        'ebpmf_models/filtered/snmf_10/tables/annotated.snmf.merged_isoforms.tab.gz'
+        gencode = 'Annotations/gencode.v44.primary_assembly.exons.sorted.bed.gz',
+        snmf = 'ebpmf_models/filtered/snmf_10/tables/snmf.merged_isoforms.exons.sorted.bed.gz',
+        annotation = 'ebpmf_models/filtered/snmf_10/tables/annotated.snmf.merged_isoforms.tab.gz'
     output:
         'ebpmf_models/filtered/snmf_10/tables/second_annotation.snmf.merged_isoforms.tab.gz'
     log:
@@ -203,7 +203,7 @@ rule isoform_second_annot:
         mem_mb = 12000
     shell:
         """
-        python scripts/second_annotation.py &> {log}
+        python scripts/second_annotation.py {input} {output} &> {log}
         """
 
 

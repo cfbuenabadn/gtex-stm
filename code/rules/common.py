@@ -111,6 +111,14 @@ Heart_Left_Ventricle_samples = gtex_samples.loc[gtex_samples.tissue_id == 'Heart
 Skin_Sun_Exposed_Lower_leg_samples = gtex_samples.loc[gtex_samples.tissue_id == 'Skin_Sun_Exposed_Lower_leg'].index  
 Testis_samples = gtex_samples.loc[gtex_samples.tissue_id == 'Testis'].index  
 
+
+
+three_all_samples = pd.read_csv('config/samples_all_liver_adipose_and_aorta.tsv', sep='\t', index_col=0)
+liver_all_samples = three_all_samples.loc[three_all_samples.tissue_id == 'Liver'].index
+aorta_all_samples = three_all_samples.loc[three_all_samples.tissue_id == 'Artery_Aorta'].index
+adipose_all_samples = three_all_samples.loc[three_all_samples.tissue_id == 'Adipose_Subcutaneous'].index
+
+
     
 rsem_output_list = ['summary.txt']
 for rf in rMATS_files:
@@ -127,6 +135,9 @@ def GetTissueListStr(wildcards):
     return IndID_list
 
 
+def GetTissueListStr_all(wildcards):
+    IndID_list = '.'.join(three_all_samples.loc[three_all_samples.tissue_id == wildcards.Tissue].index)
+    return IndID_list
 
 
 # def GetTissueListStr_subsamples(wildcards):

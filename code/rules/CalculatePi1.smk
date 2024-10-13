@@ -8,7 +8,7 @@ rule CalculatePi1_GetTraitPairs_AllTraits:
     params:
         NumChunks = NumPvalsForPi1Chunks
     output:
-        expand("pi1/PairwiseTraitsToCompare/Pairwise{{SexGroup}}.{{annotation}}_{{K}}{{QTLsRun}}.{n}.txt.gz", n=range(1, 1+NumPvalsForPi1Chunks))
+        expand("pi1/PairwiseTraitsToCompare/Pairwise{{SexGroup}}.{{annotation}}_{{K}}{{QTLsRun}}{n}.txt.gz", n=range(1, 1+NumPvalsForPi1Chunks))
     conda:
         "../envs/r_essentials.yml"
     wildcard_constraints:
@@ -34,10 +34,10 @@ rule CalculatePi1_GetTraitPairs_AllTraits:
 
 rule GetPvalsForPi1AllTraitPairs:
     input:
-        TraitsToCompare = "pi1/PairwiseTraitsToCompare/Pairwise{SexGroup}.{annotation}_{K}{QTLsRun}.{chunk}.txt.gz",
+        TraitsToCompare = "pi1/PairwiseTraitsToCompare/Pairwise{SexGroup}.{annotation}_{K}{QTLsRun}{chunk}.txt.gz",
         tabix_QTLsOut = expand("QTLs/GTEx_10/{tissue_id}/{{annotation}}_{{K}}{{SexGroup}}{{QTLsRun}}NominalPass.txt.tabix.gz", tissue_id=tissue_sub_list)
     output:
-        "pi1/PairwiseTraitsToCompare/P{SexGroup}.{annotation}_{K}{QTLsRun}.{chunk}.txt.gz"
+        "pi1/PairwiseTraitsToCompare/P{SexGroup}.{annotation}_{K}{QTLsRun}{chunk}.txt.gz"
     log:
         "logs/GetPvalsForPi1AllTraitPairs/Ascertainment{SexGroup}.{annotation}_{K}{QTLsRun}.{chunk}.log"
     wildcard_constraints:
@@ -54,9 +54,9 @@ rule GetPvalsForPi1AllTraitPairs:
 
 rule GatherPvalsForPi1AllTraitPairs:
     input:
-        expand("pi1/PairwiseTraitsToCompare/P{{SexGroup}}.{{annotation}}_{{K}}{{QTLsRun}}.{chunk}.txt.gz", chunk=range(1, NumPvalsForPi1Chunks+1))
+        expand("pi1/PairwiseTraitsToCompare/P{{SexGroup}}.{{annotation}}_{{K}}{{QTLsRun}}{chunk}.txt.gz", chunk=range(1, NumPvalsForPi1Chunks+1))
     output:
-        "pi1/input_tables/PairwisePi1Traits{SexGroup}.{annotation}_{K}{QTLsRun}.P.all.txt.gz"
+        "pi1/input_tables/PairwisePi1Traits{SexGroup}.{annotation}_{K}{QTLsRun}P.all.txt.gz"
     wildcard_constraints:
         SexGroup = "|.female|.male",
         K = "2|3|4|5|10",
@@ -69,9 +69,9 @@ rule GatherPvalsForPi1AllTraitPairs:
 
 rule CalculatePi1Table:
     input:
-        "pi1/input_tables/PairwisePi1Traits{SexGroup}.{annotation}_{K}{QTLsRun}.P.all.txt.gz"
+        "pi1/input_tables/PairwisePi1Traits{SexGroup}.{annotation}_{K}{QTLsRun}P.all.txt.gz"
     output:
-        "pi1/pi1_tables/Pi1{SexGroup}.{annotation}_{K}{QTLsRun}.txt"
+        "pi1/pi1_tables/Pi1{SexGroup}.{annotation}_{K}{QTLsRun}txt"
     log:
         "logs/pi1_tables/Pi1{SexGroup}.{annotation}_{K}{QTLsRun}.log"
     wildcard_constraints:

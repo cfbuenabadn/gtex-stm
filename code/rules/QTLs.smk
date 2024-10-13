@@ -101,7 +101,7 @@ def GetQTLtoolsWindowFlag(wildcards):
     if wildcards.FeatureCoordinatesRedefinedFor == '.ForGWASColoc':
         return "--window 1"
     else:
-        "--window 10000"
+        return "--window 10000"
 
 
 rule MakePhenotypeTableToColocFeaturesWithGWASLoci:
@@ -340,6 +340,22 @@ rule tabixNominalPassQTLResultsForGWASColoc:
         tabix -b 10 -e10 -s9 {output.txt} &>> {log}
         """
 
+
+
+rule CollectQTLsNotGrouped:
+    input:
+        expand("QTLs/GTEx_10/{tissue_id}/{annotation}_{K}.PermutationPass.FDR_Added.txt.gz", 
+               annotation = ['snmf'],
+               tissue_id = tissue_sub_list,
+               K = [3, 10]),
+        expand("QTLs/GTEx_10/{tissue_id}/{annotation}_{K}.PermutationPass.FDR_Added.txt.gz", 
+               annotation = ['transcripts'],
+               tissue_id = tissue_sub_list,
+               K = [10]),
+        #expand("QTLs/GTEx_10/{tissue_id}/{annotation}_{K}.NominalPass.txt.tabix.gz",
+        #       annotation = ['snmf'],
+        #       tissue_id = tissue_sub_list,
+        #       K = [3, 10])
 
 
 rule CollectQTLsForGWASColoc:

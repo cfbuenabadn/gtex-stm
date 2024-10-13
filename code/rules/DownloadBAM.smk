@@ -7,6 +7,8 @@ rule MakeFileManifestJson:
         "gtex-download/{Tissue}/files/tissue-manifest.json",
     params:
         GetTissueListStr
+    wildcard_constraints:
+        Tissue = '|'.join(tissue_list)
     log:
         'logs/makefilemanifest/{Tissue}.json'
     shell:
@@ -218,6 +220,8 @@ rule BamIndex:
         "logs/indexbam/{Tissue}.{IndID}.log"
     resources:
         mem_mb = 24000
+    wildcard_constraints:
+        Tissue = '|'.join(tissue_list + ['complete_tissues/Adipose_Subcutaneous', 'complete_tissues/Artery_Aorta']),
     shell:
         """
         samtools index {input} {output} > {log}
@@ -379,4 +383,85 @@ use rule DownloadFromGTEx_Brain_Cortex as DownloadFromGTEx_Testis with:
     wildcard_constraints:
         Tissue = 'Testis'
 
+
+
+
+
+
+
+
+
+
+rule MakeFileManifestJson_all:
+    input:
+        "manifests/file-manifest.json",
+        '../data/sample.tsv',
+        '../data/participant.tsv'
+    output:
+        "gtex-download/complete_tissues/{Tissue}/files/tissue-manifest.json",
+    params:
+        GetTissueListStr_all
+    log:
+        'logs/makefilemanifest/{Tissue}.json'
+    wildcard_constraints:
+        Tissue = '|'.join(tissue_list + ['Adipose_Subcutaneous', 'Artery_Aorta'])
+    shell:
+        """
+        python scripts/make_tissue_manifest.py --tissue_samples {params} --output {output} &> {log}
+        """
+
+
+rule DownloadFromGTEx_Liver_all:
+    input:
+        manifest = "gtex-download/complete_tissues/{Tissue}/files/tissue-manifest.json",
+    output:
+        temp(expand(
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/complete_tissues/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam", 
+        IndID = liver_all_samples
+        ))
+    log:
+        'logs/download_all_{Tissue}.log' 
+    wildcard_constraints:
+        Tissue = 'Liver'
+    resources:
+        mem_mb = 42000
+    shell:
+        """
+        (./gen3-client download-multiple --profile=AnVIL --manifest={input.manifest} --download-path=/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/complete_tissues/{wildcards.Tissue}/bams/ --protocol=s3) &> {log}
+        """
+
+use rule DownloadFromGTEx_Liver_all as DownloadFromGTEx_Aorta_all with:
+    output:
+        temp(expand(
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/complete_tissues/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
+        IndID = aorta_all_samples
+        ))
+    wildcard_constraints:
+        Tissue = 'Artery_Aorta'
+
+use rule DownloadFromGTEx_Liver_all as DownloadFromGTEx_Adipose_all with:
+    output:
+        temp(expand(
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/complete_tissues/{{Tissue}}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam",
+        IndID = adipose_all_samples
+        ))
+    wildcard_constraints:
+        Tissue = 'Adipose_Subcutaneous'
+
+
+rule BamIndex_all:
+    input:
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/complete_tissues/{Tissue}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam"
+    output:
+        "/project2/mstephens/cfbuenabadn/gtex-stm/code/gtex-download/complete_tissues/{Tissue}/bams/{IndID}.Aligned.sortedByCoord.out.patched.md.bam.bai"
+    log:
+        "logs/indexbam_all/{Tissue}.{IndID}.log"
+    resources:
+        mem_mb = 24000
+    wildcard_constraints:
+        Tissue = '|'.join(tissue_list)
+    shell:
+        """
+        samtools index {input} {output} > {log}
+        """
 
